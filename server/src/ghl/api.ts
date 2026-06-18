@@ -54,6 +54,68 @@ export async function listCallLogs(
   return data;
 }
 
+export interface ConnectionStatus {
+  /** Token is live (HighLevel still accepts it). */
+  connected: boolean;
+  /** Token also carries the Voice AI scope we need. */
+  voiceAiScopeOk: boolean;
+  /** Human-readable explanation for the dashboard. */
+  detail: string;
+}
+
+function describeAxiosError(err: unknown): { status?: number; message: string } {
+  if (typeof err === 'object' && err && 'response' in err) {
+    const resp = (err as { response?: { status?: number; data?: { message?: string } } }).response;
+    return { status: resp?.status, message: resp?.data?.message ?? 'request failed' };
+  }
+  return { message: err instanceof Error ? err.message : 'unknown error' };
+}
+
+/**
+ * Probe HighLevel with the stored token to report the LIVE connection state — distinct from
+ * "we have a token on file". Distinguishes: live + scoped, live but missing the Voice AI
+ * scope, and revoked/uninstalled (token rejected).
+ */
+export async function checkConnection(installKey?: string): Promise<ConnectionStatus> {
+  let token: string;
+  try {
+    token = await getValidAccessToken(installKey);
+  } catch (err) {
+    return {
+      connected: false,
+      voiceAiScopeOk: false,
+      detail: `Not authorized — token refresh failed (likely uninstalled/revoked). Reinstall the app. (${
+        err instanceof Error ? err.message : 'error'
+      })`,
+    };
+  }
+
+  try {
+    await axios.get(`${GHL.apiBase}/voice-ai/agents`, {
+      headers: { Authorization: `Bearer ${token}`, Version: GHL.apiVersion },
+      params: { locationId: installKey },
+    });
+    return { connected: true, voiceAiScopeOk: true, detail: 'Connected — Voice AI access OK.' };
+  } catch (err) {
+    const { status, message } = describeAxiosError(err);
+    if (status === 401 && /scope/i.test(message)) {
+      return {
+        connected: true,
+        voiceAiScopeOk: false,
+        detail: 'Token valid, but missing Voice AI scope — publish a new version with voice-ai-dashboard.readonly and reinstall.',
+      };
+    }
+    if (status === 401 || status === 403) {
+      return {
+        connected: false,
+        voiceAiScopeOk: false,
+        detail: 'Token rejected by HighLevel (likely uninstalled/revoked). Reinstall the app.',
+      };
+    }
+    return { connected: false, voiceAiScopeOk: false, detail: `HighLevel error ${status ?? '?'}: ${message}` };
+  }
+}
+
 /** Fetch a single call log (includes the transcript when available). */
 export async function getCallLog(callId: string, installKey?: string): Promise<unknown> {
   const token = await getValidAccessToken(installKey);

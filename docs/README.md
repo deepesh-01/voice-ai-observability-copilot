@@ -34,6 +34,7 @@ See [`requirements.md`](./requirements.md) for the full, ID'd requirement breakd
 | [`assumptions-and-product-calls.md`](./assumptions-and-product-calls.md) | Register of every assumption, product call, and guess — each with status (assumed / validated / invalidated). |
 | [`comparisons/`](./comparisons/) | Data-backed comparisons (tech, libraries, models, approaches) too large for inline ADR tables. |
 | [`functional-vs-mocked.md`](./functional-vs-mocked.md) | Living ledger of what is **real** vs **mocked** — a required deliverable (D3.1). |
+| [`ux-changelog.md`](./ux-changelog.md) | Living list of UI/UX changes & fixes (Design discipline), each traced to E1. |
 | [`team-of-one.md`](./team-of-one.md) | How a single builder owns Product, Design, Engineering & QA — required deliverable (D3). |
 
 ---

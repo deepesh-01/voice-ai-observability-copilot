@@ -1,12 +1,17 @@
 import { Router } from 'express';
 import { listInstalls } from '../store/tokenStore.js';
-import { listCallLogs, getCallLog } from '../ghl/api.js';
+import { listCallLogs, getCallLog, checkConnection } from '../ghl/api.js';
 
 export const apiRouter = Router();
 
 /** Which sub-accounts/agencies have installed the app (drives the dashboard's account picker). */
 apiRouter.get('/installs', async (_req, res) => {
   res.json({ installs: await listInstalls() });
+});
+
+/** Live HighLevel connection status for one install — probes the API, not just local state. */
+apiRouter.get('/installs/:key/status', async (req, res) => {
+  res.json({ key: req.params.key, ...(await checkConnection(req.params.key)) });
 });
 
 /** List Voice AI call logs for a location. */
