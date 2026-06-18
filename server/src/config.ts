@@ -22,8 +22,14 @@ function required(name: string): string {
  * there are no magic strings scattered across the codebase.
  */
 export const GHL = {
-  /** Where we send the user to authorize + choose a location/sub-account. */
-  authorizeUrl: 'https://marketplace.gohighlevel.com/oauth/chooselocation',
+  /**
+   * Where we send the user to authorize + choose a location/sub-account. Matches where the
+   * app is administered (marketplace.gohighlevel.com). For real installs, prefer the
+   * portal's per-version "Install link" — a DRAFT version isn't resolvable via a hand-built
+   * chooselocation URL (→ noAppVersionIdFound). Overridable via AUTHORIZE_URL.
+   */
+  authorizeUrl:
+    process.env.AUTHORIZE_URL ?? 'https://marketplace.gohighlevel.com/oauth/chooselocation',
   /** Token exchange + refresh. */
   tokenUrl: 'https://services.leadconnectorhq.com/oauth/token',
   /** Base for all data APIs. */

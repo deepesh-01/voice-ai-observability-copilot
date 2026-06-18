@@ -34,7 +34,21 @@ The failure is **portal-side**, before the redirect returns to us:
 - **A-009 (new, 🟡):** OAuth fails with `noAppVersionIdFound` until Auth config is saved.
 - Confirms **A-007** is resolved in the same place (scope selection).
 
+## Update — real root cause (portal screenshot)
+
+- App version badge shows **`vdraft • DRAFT`**. A DRAFT version has no resolvable
+  integration → a hand-built `chooselocation?client_id=…` URL fails with
+  `noAppVersionIdFound`. Redirect URL `https://voai.deepesh-engg.in/oauth/callback` **was**
+  correctly saved; not the cause.
+- App is administered on **`marketplace.gohighlevel.com`** → briefly switched our
+  `authorizeUrl` to `leadconnectorhq` then **reverted** to `gohighlevel.com` (made it
+  `AUTHORIZE_URL`-overridable).
+- **Correct install path for a draft:** add Scopes (required) + Save, then use the portal's
+  per-version **"Install link"** (or publish the version) — not our `/oauth/install`.
+- A-009 updated with this root cause.
+
 ## Next action
 
-- Builder completes the portal Auth config + login, retries authorize. Then I verify the
-  install + pull a real `Get Call Log` payload (A-003) → KPI schema (A-004).
+- Builder: add scopes + Save, install via the portal Install link, share the exact Voice AI
+  scope name (→ set `SCOPES`). Then I verify the install + pull a real `Get Call Log`
+  payload (A-003) → KPI schema (A-004).
