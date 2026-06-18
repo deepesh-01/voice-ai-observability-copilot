@@ -19,6 +19,22 @@ the next action. This is the audit trail that makes a solo "Team of One" build l
 | S-009 | 2026-06-19 | Ingestion pipeline live (200, empty) — connection + Voice AI scope verified | — (A-007/A-011 ✅) | [session-009.md](./session-009.md) |
 | S-010 | 2026-06-19 | Evaluate "10 skills" article; add WIG + tdd + domain-modeling + quality-gates | ADR-0006 | [session-010.md](./session-010.md) |
 
+## Session-close practice (always do this before a session ends)
+
+Standing rule: **no session ends without saving its progress and the next step.** Before
+wrapping up (or when the user signals "that's it" / starts a new session), always:
+
+1. **Write/finish the session log** `session-NNN.md` — what was *Done*, *Decisions* (ADRs),
+   *Assumptions touched*, and a concrete **Next action** (the single next step, so the next
+   session can start cold).
+2. **Update the indexes & trail** — this `sessions/README.md` table, the
+   `decisions/README.md` index (if any ADRs), `assumptions-and-product-calls.md`,
+   `functional-vs-mocked.md`, and the status table in `docs/README.md` (+ its "Last updated").
+3. **Commit** — leave the working tree clean so the checkpoint is real, not just in chat.
+
+If a session ends with work in flight, the **Next action** line is mandatory — it's the
+handoff to the next session.
+
 ## Template for a new session
 
 ```markdown

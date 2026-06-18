@@ -54,6 +54,10 @@ Every time we make a non-trivial choice, we follow this loop:
 > If a choice was made and it isn't reflected in an ADR, a session log, or the assumptions
 > register, **it didn't happen correctly.** Fix the trail, not just the code.
 
+> **Session-close rule:** no session ends without saving its progress and the next step —
+> finish the session log (incl. a concrete **Next action**), update the indexes/status, and
+> commit. See [`sessions/README.md`](./sessions/) → "Session-close practice".
+
 ### ID conventions
 
 - `R*` / `D*` / `E*` — requirement / deliverable / evaluation-criterion IDs (`requirements.md`)
