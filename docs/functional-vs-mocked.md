@@ -8,8 +8,8 @@
 
 | Component | Traces to | State | Notes |
 |-----------|-----------|-------|-------|
-| HighLevel OAuth (install/callback/refresh) | R1.2 | 🟡 | Real flow coded against verified endpoints; not yet run against a live install (A-001/A-007). |
-| HighLevel sandbox & marketplace app install | R1.1, R1.2 | ⬜ | App scaffolded; pending sandbox authorize + portal config. |
+| HighLevel OAuth (install/callback/refresh) | R1.2 | 🟢 | **Real install completed** — sandbox sub-account `B7TzvBb6H6QvDNdEEhlt` connected; token stored + refresh wired. |
+| HighLevel sandbox & marketplace app install | R1.1, R1.2 | 🟢 | App **Live**; installed on a sandbox sub-account. Adding Voice AI scopes via a new version + reinstall (A-007/A-011). |
 | Transcript ingestion (API) | R2.1, D1.1 | 🟡 | Client written to the real `GET /voice-ai/dashboard/call-logs`; not yet hit live, fixture pending (A-003). Webhook vs poll TBD. |
 | Observability parameters / KPI config | R2.2 | ⬜ | KPI model proposed in A-004. |
 | KPI scoring & deviation detection (LLM) | R2.3 | ⬜ | Claude-based; structured output. |

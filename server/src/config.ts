@@ -50,7 +50,8 @@ export const config = {
    */
   scopes: (
     process.env.SCOPES ??
-    'conversations.readonly conversations/message.readonly conversation-ai.readonly'
+    'voice-ai-dashboard.readonly voice-ai-agents.readonly voice-ai-agent-goals.readonly ' +
+      'conversations.readonly conversations/message.readonly conversation-ai.readonly'
   ).trim(),
   anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? '',
 } as const;
