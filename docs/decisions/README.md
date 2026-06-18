@@ -1,0 +1,28 @@
+# Architecture Decision Records (ADRs)
+
+This is the authoritative index of every significant decision made on this project.
+Each ADR is immutable once **Accepted** — to change a decision, write a new ADR that
+**supersedes** the old one (and update the "Status" / "Superseded by" fields).
+
+Format: lightweight [MADR](https://adr.github.io/madr/). Use [`ADR-template.md`](./ADR-template.md).
+
+## Index
+
+| ID | Title | Status | Traces to | Date |
+|----|-------|--------|-----------|------|
+| [ADR-0001](./0001-documentation-tracking-system.md) | Documentation & decision-tracking system | Accepted | D3, C2, E3 | 2026-06-18 |
+| [ADR-0002](./0002-tech-stack.md) | Core tech stack (backend, frontend, LLM, storage) | Accepted | D1, R1.2, C3 | 2026-06-18 |
+| [ADR-0003](./0003-specialized-agent-roster.md) | Specialized Claude agent roster | Accepted | C2, D3, E3, E4 | 2026-06-18 |
+
+## Statuses
+
+- **Proposed** — written, not yet committed to.
+- **Accepted** — committed; code should follow it.
+- **Superseded** — replaced by a later ADR (linked).
+- **Deprecated** — no longer relevant, not replaced.
+
+## When to write an ADR
+
+Write one whenever a choice is hard to reverse, affects architecture, picks between real
+alternatives, or rests on an assumption. Cheap, obvious, easily-reversible choices don't
+need one — but if you compared options, capture the comparison.
