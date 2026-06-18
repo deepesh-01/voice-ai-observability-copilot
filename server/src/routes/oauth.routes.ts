@@ -18,10 +18,17 @@ oauthRouter.get('/callback', async (req, res) => {
   try {
     const tokens = await exchangeCodeForTokens(code);
     const where = tokens.locationId ?? tokens.companyId ?? 'unknown';
+    console.log(`[oauth] install OK — userType=${tokens.userType} key=${where}`);
     // Land back in the embedded dashboard after a successful install.
     res.redirect(`/?installed=${encodeURIComponent(where)}`);
   } catch (err) {
+    // axios errors carry the upstream response body — surface it for debugging (scope/redirect issues).
+    const axiosBody =
+      typeof err === 'object' && err && 'response' in err
+        ? JSON.stringify((err as { response?: { data?: unknown } }).response?.data)
+        : undefined;
     const detail = err instanceof Error ? err.message : 'unknown error';
-    res.status(502).send(`OAuth token exchange failed: ${detail}`);
+    console.error(`[oauth] token exchange FAILED: ${detail}${axiosBody ? ` | ${axiosBody}` : ''}`);
+    res.status(502).send(`OAuth token exchange failed: ${detail}${axiosBody ? ` — ${axiosBody}` : ''}`);
   }
 });
