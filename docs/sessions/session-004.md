@@ -24,9 +24,18 @@ HighLevel OAuth and an embeddable dashboard shell, and define the permanent-URL 
 - **Verified:** server typechecks + boots; `/health` and `/api/installs` respond; CSP header
   present; `web` builds; Express serves the built dashboard on one origin.
 
+## Live verification (cloudflared)
+
+- Chosen subdomain: **`ghl.deepesh-engg.in`** → `localhost:8095` (added to `main` tunnel).
+- DNS CNAME created; `main` tunnel restarted via `launchctl kickstart -k`.
+- Confirmed working: `https://ghl.deepesh-engg.in/health` → 200; `/oauth/install` → 302 to
+  `marketplace.gohighlevel.com/oauth/chooselocation` with correct `redirect_uri` + `client_id`;
+  existing hostname `takejob.deepesh-engg.in` → 200 (no collateral breakage).
+- `.env` set: `PUBLIC_BASE_URL=https://ghl.deepesh-engg.in`, `PORT=8095`.
+
 ## Decisions
 
-- **ADR-0004** — Reuse the existing `main` cloudflared tunnel (add `copilot.deepesh-engg.in`
+- **ADR-0004** — Reuse the existing `main` cloudflared tunnel (add `ghl.deepesh-engg.in`
   → `:8095`); single-origin app (Express serves SPA + API + OAuth); file-based token store
   (interim). (Traces to R1.1, R1.2, R2.1, D1, D1.1, E4.)
 
