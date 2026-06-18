@@ -78,8 +78,9 @@ The authoritative, always-current list of decisions lives in
 | Tracking system stood up | ✅ This folder (ADR-0001) |
 | Tech stack chosen | ✅ ADR-0002 |
 | Specialized agents stood up | ✅ ADR-0003 — 6 agents in `.claude/agents/` |
-| Architecture designed | ⏳ Pending |
-| Implementation | ⏳ Pending |
+| Hosting & app scaffold | ✅ ADR-0004 — OAuth + dashboard shell run; permanent URL via cloudflared |
+| Architecture designed | 🟡 Setup layer done; KPI/ingestion architecture next |
+| Implementation | 🟡 OAuth + ingestion client scaffolded; scoring/recommendations pending |
 | Demo recorded | ⏳ Pending |
 
-_Last updated: 2026-06-18 (Session S-003)._
+_Last updated: 2026-06-18 (Session S-004)._

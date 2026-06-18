@@ -14,6 +14,7 @@
 | **A-004** | Product | "Observability parameters" (R2.2) are best modeled as a small set of **KPIs derived from the agent's goal/script** (e.g. booking-rate, objection-handling, script adherence, sentiment, dead-air, escalation-needed) rather than free-form metrics. | 🟡 | Product call. Refine after seeing real transcripts. | R2.2, R2.3 |
 | **A-005** | Product | "Use Actions" (R2.6) = timestamped call segments flagged for **human review** or **script training**, surfaced as deep-links into the transcript at that moment. | 🟡 | Product call; validate it reads as "actionable" in the demo (E1, E2). | R2.6 |
 | **A-006** | Scope | "Real-time" (D1.1) is satisfied by **near-real-time ingestion on call-completion** (webhook/poll → analyze within seconds), not live mid-call streaming. | 🟡 | Product call to fit C1; note clearly in functional-vs-mocked. | D1.1 |
+| **A-007** | Integration | The exact OAuth **scope strings** (esp. the Voice AI call-log scope) match what's enabled on the app in the portal. `SCOPES` is env-driven with a safe default; mismatches cause `chooselocation` to reject. | 🟡 | Confirm against the portal scope dropdown during install; adjust `SCOPES` in `.env`. | ADR-0004, R1.2, R2.1 |
 
 ## How to add a row
 

@@ -12,6 +12,7 @@ dist/
 build/
 **/dist/
 .vite/
+*.tsbuildinfo
 
 # Logs
 *.log

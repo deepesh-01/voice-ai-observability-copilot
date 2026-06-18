@@ -13,6 +13,7 @@ Format: lightweight [MADR](https://adr.github.io/madr/). Use [`ADR-template.md`]
 | [ADR-0001](./0001-documentation-tracking-system.md) | Documentation & decision-tracking system | Accepted | D3, C2, E3 | 2026-06-18 |
 | [ADR-0002](./0002-tech-stack.md) | Core tech stack (backend, frontend, LLM, storage) | Accepted | D1, R1.2, C3 | 2026-06-18 |
 | [ADR-0003](./0003-specialized-agent-roster.md) | Specialized Claude agent roster | Accepted | C2, D3, E3, E4 | 2026-06-18 |
+| [ADR-0004](./0004-hosting-tunnel-and-app-scaffold.md) | Hosting (cloudflared), single-origin app, repo scaffold | Accepted | R1.1, R1.2, R2.1, D1, D1.1 | 2026-06-18 |
 
 ## Statuses
 
