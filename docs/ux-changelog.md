@@ -9,6 +9,7 @@
 | # | Change | Why / trigger | Traces to | Status | Session |
 |---|--------|---------------|-----------|--------|---------|
 | UX-001 | **Live "Check HighLevel status" button per connected account + header "↻ Refresh"** | Dashboard previously showed "connected" from the *local token on file*, which drifts from HighLevel's real state (e.g. after an uninstall). Now a button probes the GHL API and reports one of: connected+scoped (green), connected-but-missing-Voice-AI-scope (amber), or rejected/uninstalled (red). | E1, R1.2 | ✅ | S-007 |
+| UX-006 | **Persistent "Connect / re-authorize account" action + inline "Re-authorize →" on degraded status** | The Connect button only rendered when *zero* installs existed, so once a stale/amber/red token was on file there was no UI path to reinstall. Now a connect/re-authorize action is always available, and degraded statuses link straight to `/oauth/install`. | E1, R1.2 | ✅ | S-007 |
 
 ## Planned / ideas (not yet built)
 

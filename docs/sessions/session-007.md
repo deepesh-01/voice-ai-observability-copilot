@@ -29,6 +29,13 @@ locally"), after observing that an uninstall left the dashboard still showing "c
   on the next refresh.
 - Follow-up (not now): handle the GHL **uninstall webhook** to auto-purge stale tokens.
 
+## Follow-up fix (same session)
+
+- **UX-006:** the Connect button only showed when zero installs existed → no reinstall path
+  once a stale/amber/red token was on file (spotted by builder from the live dashboard). Added
+  a persistent "+ Connect / re-authorize account" action plus an inline "Re-authorize →" link
+  on any degraded status. Rebuilt + redeployed.
+
 ## Next action
 
 - Builder: publish the new app version with `voice-ai-dashboard.readonly` (+agents/goals),

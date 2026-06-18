@@ -93,7 +93,17 @@ onMounted(load);
           </div>
           <p v-if="statuses[id] && !statuses[id].loading" class="detail" :class="badgeClass(statuses[id])">
             {{ statuses[id].detail }}
+            <a
+              v-if="statuses[id].connected === false || statuses[id].voiceAiScopeOk === false"
+              class="reinstall-link"
+              href="/oauth/install"
+            >Re-authorize →</a>
           </p>
+        </div>
+
+        <!-- Always available: connect another account or re-authorize an existing one. -->
+        <div class="connect-action">
+          <a class="btn ghost small" href="/oauth/install">+ Connect / re-authorize account</a>
         </div>
       </div>
 
@@ -120,4 +130,6 @@ onMounted(load);
 .dot.idle { background: #c7ccd4; }
 .btn.small { padding: 4px 10px; font-size: 12.5px; }
 .btn.ghost { background: #fff; color: var(--accent); border: 1px solid var(--border); }
+.connect-action { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.reinstall-link { margin-left: 8px; font-weight: 600; white-space: nowrap; }
 </style>
