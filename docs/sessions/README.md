@@ -18,6 +18,7 @@ the next action. This is the audit trail that makes a solo "Team of One" build l
 | S-008 | 2026-06-19 | Adopt Emil Kowalski skills as UI/UX craft benchmark | ADR-0005 | [session-008.md](./session-008.md) |
 | S-009 | 2026-06-19 | Ingestion pipeline live (200, empty) — connection + Voice AI scope verified | — (A-007/A-011 ✅) | [session-009.md](./session-009.md) |
 | S-010 | 2026-06-19 | Evaluate "10 skills" article; add WIG + tdd + domain-modeling + quality-gates | ADR-0006 | [session-010.md](./session-010.md) |
+| S-011 | 2026-06-19 | Session lifecycle automation (/end-session skill, SessionStart/End hooks, state) | ADR-0007 | [session-011.md](./session-011.md) |
 
 ## Session-close practice (always do this before a session ends)
 
@@ -34,6 +35,16 @@ wrapping up (or when the user signals "that's it" / starts a new session), alway
 
 If a session ends with work in flight, the **Next action** line is mandatory — it's the
 handoff to the next session.
+
+### Tooling (ADR-0007)
+
+- **Start:** a `SessionStart` hook registers the session and asks "Is this a development
+  session?"; the answer is recorded in `.claude/state/sessions.json` (gitignored).
+- **Close:** run the **`/end-session`** skill — it performs steps 1–3 above, marks the session
+  ended (`session-state.mjs end`), and commits.
+- **Safety net:** a `SessionEnd` hook warns if a session ends *without* `/end-session` (e.g. a
+  forced Ctrl+C exit — Ctrl+C itself can't be rebound to a custom dialog, so this is the
+  substitute). Inspect active sessions any time with `node .claude/hooks/session-state.mjs list`.
 
 ## Template for a new session
 

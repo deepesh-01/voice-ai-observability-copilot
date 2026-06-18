@@ -39,3 +39,6 @@ coverage/
 
 # Source PDFs (assignment briefs — keep out of the public repo)
 *.pdf
+
+# Session lifecycle runtime state (machine-specific)
+.claude/state/
