@@ -29,7 +29,7 @@ several apps.
 
 ## Decision
 
-- Serve the app at **`https://ghl.deepesh-engg.in`** by adding one ingress rule
+- Serve the app at **`https://voai.deepesh-engg.in`** by adding one ingress rule
   (`→ http://localhost:8095`) to the existing `main` cloudflared tunnel + a DNS route.
 - **Single-origin** app: Express (`:8095`) serves the built Vue dashboard, the `/api/*`
   routes, and the `/oauth/*` flow. Iframe-friendly headers (no `X-Frame-Options`; scoped
@@ -48,8 +48,12 @@ one Custom Page URL — fewer places to misconfigure (E4). Verified working: ser
 
 - Adding our hostname requires **restarting the `main` tunnel**, which briefly interrupts the
   builder's other hostnames on that tunnel → must be coordinated, not done silently.
-- `ghl.deepesh-engg.in` is the canonical URL for: OAuth redirect (portal step A.5),
+- `voai.deepesh-engg.in` is the canonical URL for: OAuth redirect (portal step A.5),
   Custom Page (A.7), and `PUBLIC_BASE_URL`.
 - File-based token store is interim; `data/` and `tokens.json` are gitignored. Migrating to
   MongoDB is a follow-up.
 - Exact OAuth scope strings (esp. Voice AI) still need portal confirmation → A-007.
+- **Hostname must avoid brand references:** HighLevel rejects redirect URIs containing
+  `ghl`/brand, so the canonical host was renamed `ghl.` → `voai.deepesh-engg.in` (A-008,
+  S-005). The old `ghl.` CNAME is now an orphan (no ingress → catch-all 404); harmless,
+  can be deleted from Cloudflare DNS later.

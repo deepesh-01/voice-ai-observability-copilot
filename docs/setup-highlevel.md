@@ -40,21 +40,21 @@ the backend port (`8095`). See ADR-0004.
 
 1. Add an ingress rule to `~/.cloudflared/config.yml`:
    ```yaml
-     - hostname: ghl.deepesh-engg.in
+     - hostname: voai.deepesh-engg.in
        service: http://localhost:8095
    ```
    (place it above the `http_status:404` catch-all)
 2. Create the DNS route (idempotent):
    ```bash
-   cloudflared tunnel route dns main ghl.deepesh-engg.in
+   cloudflared tunnel route dns main voai.deepesh-engg.in
    ```
 3. Restart the `main` tunnel so it picks up the new ingress (briefly blips other hostnames
    on this tunnel — coordinate timing).
-4. Set `PUBLIC_BASE_URL=https://ghl.deepesh-engg.in` in `.env`, and use
-   `https://ghl.deepesh-engg.in/oauth/callback` as the app redirect URL (step A.5).
+4. Set `PUBLIC_BASE_URL=https://voai.deepesh-engg.in` in `.env`, and use
+   `https://voai.deepesh-engg.in/oauth/callback` as the app redirect URL (step A.5).
 
 ## D. Authorize
 
-Visit `https://ghl.deepesh-engg.in/oauth/install` → choose the sandbox sub-account →
+Visit `https://voai.deepesh-engg.in/oauth/install` → choose the sandbox sub-account →
 land back in the dashboard. Tokens are exchanged and stored; the dashboard then lists the
 connected account.
