@@ -23,6 +23,14 @@ visualize performance issues across agents and make recommendations feel immedia
   follow that ADR; don't pull a heavy dep without recording why).
 - All real states handled: empty, loading, error, "no issues found".
 
+## Craft bar (our UI/UX benchmark)
+
+Build to **Emil Kowalski's design-engineering bar**, installed as project skills (ADR-0005):
+- Invoke **`emil-design-eng`** while implementing components, transitions, and interaction
+  details — it defines our standard of polish for E1.
+- Run **`review-animations`** on any animation/motion before considering it done; approval
+  is earned, not assumed.
+
 ## Engineering principles
 - Type the API responses; fail loud on schema mismatch in dev, gracefully in prod.
 - Keep components small and reviewable (E4). Match HighLevel's visual language (E1).

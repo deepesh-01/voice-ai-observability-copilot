@@ -84,4 +84,4 @@ The authoritative, always-current list of decisions lives in
 | Implementation | 🟡 OAuth + ingestion client scaffolded; scoring/recommendations pending |
 | Demo recorded | ⏳ Pending |
 
-_Last updated: 2026-06-18 (Session S-004)._
+_Last updated: 2026-06-19 (Session S-008)._

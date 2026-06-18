@@ -3,6 +3,10 @@
 > Owned by the Design discipline ([`team-of-one.md`](./team-of-one.md)). Every dashboard/UX
 > change or fix is logged here with the requirement it serves (E1 = Product Thinking + UI/UX)
 > and its status. This is the design counterpart to the ADR/decision log.
+>
+> **Craft bar:** our UI/UX benchmark is Emil Kowalski's design-engineering skills
+> (`emil-design-eng`, `review-animations`) — see [ADR-0005](./decisions/0005-uiux-craft-benchmark.md).
+> Changes should meet that bar.
 
 **Status:** ✅ Done · 🔄 In progress · 📋 Planned · 💡 Idea
 

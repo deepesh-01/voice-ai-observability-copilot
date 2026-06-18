@@ -24,6 +24,17 @@ like it belongs inside HighLevel — not a bolt-on.
 - **Native to HighLevel:** match GHL's visual language (spacing, neutral palette, embedded
   iframe constraints). Research HighLevel UI conventions before inventing patterns.
 
+## Craft bar (our UI/UX benchmark)
+
+Our quality bar is **Emil Kowalski's design-engineering philosophy**, installed as project
+skills (ADR-0005):
+- **`emil-design-eng`** — invoke it for UI polish, component design, spacing/typography,
+  state transitions, and the "invisible details" that make software feel right. This is the
+  standard to design against, not a nice-to-have.
+- **`review-animations`** — run it on any motion/transition work before calling it done.
+
+Treat these as the definition of "good" for E1. Don't ship UI that wouldn't pass them.
+
 ## Deliverables you produce
 - Lo-fi structure (component tree, screen flow) before pixels. ASCII/wireframe is fine.
 - Clear states: empty, loading, error, and "no issues found" — these sell intuitiveness (E1).

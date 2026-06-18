@@ -15,6 +15,7 @@ the next action. This is the audit trail that makes a solo "Team of One" build l
 | S-005 | 2026-06-18 | Rename public host ghl→voai (HighLevel rejects brand in redirect URI) | — (A-008, amends ADR-0004) | [session-005.md](./session-005.md) |
 | S-006 | 2026-06-18 | First authorize attempt — diagnosed noAppVersionIdFound (portal Auth config) | — (A-009) | [session-006.md](./session-006.md) |
 | S-007 | 2026-06-19 | Live connection-status UI (probe + refresh) + UX changelog (UX-001) | — | [session-007.md](./session-007.md) |
+| S-008 | 2026-06-19 | Adopt Emil Kowalski skills as UI/UX craft benchmark | ADR-0005 | [session-008.md](./session-008.md) |
 
 ## Template for a new session
 
