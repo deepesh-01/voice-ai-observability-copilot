@@ -10,7 +10,7 @@
 |-----------|-----------|-------|-------|
 | HighLevel OAuth (install/callback/refresh) | R1.2 | 🟢 | **Real install completed** — sandbox sub-account `B7TzvBb6H6QvDNdEEhlt` connected; token stored + refresh wired. |
 | HighLevel sandbox & marketplace app install | R1.1, R1.2 | 🟢 | App **Live**; installed on a sandbox sub-account. Adding Voice AI scopes via a new version + reinstall (A-007/A-011). |
-| Transcript ingestion (API) | R2.1, D1.1 | 🟡 | Client written to the real `GET /voice-ai/dashboard/call-logs`; not yet hit live, fixture pending (A-003). Webhook vs poll TBD. |
+| Transcript ingestion (API) | R2.1, D1.1 | 🟢 | **Live** — `GET /voice-ai/dashboard/call-logs` returns 200 with valid auth+scope. List shape confirmed: `{callLogs:[], totalRecords, traceId}`. Sandbox has 0 calls yet → need a real Voice AI call to capture the transcript/per-call shape (A-003). Webhook vs poll TBD. |
 | Observability parameters / KPI config | R2.2 | ⬜ | KPI model proposed in A-004. |
 | KPI scoring & deviation detection (LLM) | R2.3 | ⬜ | Claude-based; structured output. |
 | Unified dashboard | R2.4, E1 | 🟡 | Vue 3 shell built + embeddable; health/installs wired. Full agent/call/issue views pending. |
