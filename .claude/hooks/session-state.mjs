@@ -141,6 +141,8 @@ if (cmd === 'start') {
       endedAt: null,
       closedVia: undefined,
       wrapToken: wrapToken ?? prev.wrapToken ?? null,
+      // Used by the wrapper to skip auto-close for empty sessions (no conversation to resume).
+      transcriptPath: input.transcript_path || prev.transcriptPath || null,
     };
     st.current = id;
   });
@@ -222,6 +224,13 @@ if (cmd === 'start') {
   const st = load();
   const hit = tok ? Object.entries(st.sessions).find(([, v]) => v.wrapToken === tok) : null;
   process.stdout.write(hit ? hit[0] : '');
+} else if (cmd === 'transcript-of') {
+  // Print the recorded transcript path for a session (empty if unknown). The wrapper uses
+  // this to skip auto-close for empty sessions, which have no conversation to --resume.
+  const id = process.argv[3];
+  const st = load();
+  const s = id ? st.sessions[id] : null;
+  process.stdout.write(s && s.transcriptPath ? s.transcriptPath : '');
 } else if (cmd === 'list') {
   const st = load();
   const active = Object.entries(st.sessions)

@@ -49,10 +49,23 @@ claude() {
   # If that specific session wasn't closed via /end-session, close it now — resuming
   # exactly it (not -c) so the saved log has the right conversation's context.
   if [[ -n "$sid" ]] && node "$proj_hook" needs-close "$sid" >/dev/null 2>&1; then
-    print -P "%F{yellow}↩ Session $sid left open — running /end-session to save progress + next step…%f"
-    CLAUDE_AUTOCLOSE=1 CLAUDE_WRAP_TOKEN="$tok" \
-      command claude --resume "$sid" -p "/end-session" --permission-mode bypassPermissions
-    print -P "%F{green}✓ Session $sid closed and saved.%f"
+    # Empty sessions (opened then exited without typing) have no transcript to --resume,
+    # and nothing worth saving — skip rather than fail.
+    local tpath="$(node "$proj_hook" transcript-of "$sid" 2>/dev/null)"
+    if [[ -n "$tpath" && ! -s "$tpath" ]]; then
+      print -P "%F{yellow}↩ Session $sid had no conversation — nothing to save, skipping /end-session.%f"
+    else
+      print -P "%F{yellow}↩ Session $sid left open — running /end-session to save progress + next step…%f"
+      CLAUDE_AUTOCLOSE=1 CLAUDE_WRAP_TOKEN="$tok" \
+        command claude --resume "$sid" -p "/end-session" --permission-mode bypassPermissions
+      local close_ec=$?
+      if [[ $close_ec -eq 0 ]]; then
+        print -P "%F{green}✓ Session $sid closed and saved.%f"
+      else
+        print -P "%F{red}✗ Auto-close FAILED for $sid (exit $close_ec — see message above).%f"
+        print -P "%F{red}  Progress was NOT saved. Run \`claude -c\` then /end-session to recover.%f"
+      fi
+    fi
   fi
 
   return $ec
