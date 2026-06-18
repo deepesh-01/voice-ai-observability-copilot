@@ -17,6 +17,7 @@ the next action. This is the audit trail that makes a solo "Team of One" build l
 | S-007 | 2026-06-19 | Live connection-status UI (probe + refresh) + UX changelog (UX-001) | — | [session-007.md](./session-007.md) |
 | S-008 | 2026-06-19 | Adopt Emil Kowalski skills as UI/UX craft benchmark | ADR-0005 | [session-008.md](./session-008.md) |
 | S-009 | 2026-06-19 | Ingestion pipeline live (200, empty) — connection + Voice AI scope verified | — (A-007/A-011 ✅) | [session-009.md](./session-009.md) |
+| S-010 | 2026-06-19 | Evaluate "10 skills" article; add WIG + tdd + domain-modeling + quality-gates | ADR-0006 | [session-010.md](./session-010.md) |
 
 ## Template for a new session
 

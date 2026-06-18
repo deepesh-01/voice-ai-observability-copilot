@@ -15,6 +15,7 @@ Format: lightweight [MADR](https://adr.github.io/madr/). Use [`ADR-template.md`]
 | [ADR-0003](./0003-specialized-agent-roster.md) | Specialized Claude agent roster | Accepted | C2, D3, E3, E4 | 2026-06-18 |
 | [ADR-0004](./0004-hosting-tunnel-and-app-scaffold.md) | Hosting (cloudflared), single-origin app, repo scaffold | Accepted | R1.1, R1.2, R2.1, D1, D1.1 | 2026-06-18 |
 | [ADR-0005](./0005-uiux-craft-benchmark.md) | UI/UX craft benchmark (Emil Kowalski skills) | Accepted | E1, R2.4, R2.6, D3 | 2026-06-19 |
+| [ADR-0006](./0006-additional-skills.md) | Additional skills (UI guidelines, TDD, domain modeling, quality gates) | Accepted | E1, E3, E4, R2.2 | 2026-06-19 |
 
 ## Statuses
 
