@@ -1,6 +1,6 @@
 import { runStructured, CLAUDE_MODEL } from '../llm/agent.js';
 import { getAgentPrompt } from '../ghl/api.js';
-import { analysisRepo, type AnalysisRepository } from '../store/analysisRepository.js';
+import { analysisRepo, UNASSIGNED_AGENT, type AnalysisRepository } from '../store/analysisRepository.js';
 import { KPI_BY_KEY, KPI_KEYS } from './kpis.js';
 import type {
   AgentRecommendations,
@@ -211,7 +211,10 @@ export interface RecommendForAgentOptions {
  */
 export async function recommendForAgent(opts: RecommendForAgentOptions): Promise<AgentRecommendations> {
   const repo = opts.repo ?? analysisRepo;
-  const agentId = opts.agentId ?? null;
+  // The unassigned-bucket sentinel is not a real agent id — report it as null and
+  // never try to fetch a configured prompt for it.
+  const isRealAgent = opts.agentId != null && opts.agentId !== UNASSIGNED_AGENT;
+  const agentId = isRealAgent ? opts.agentId! : null;
 
   const [analyses, averagesRaw] = await Promise.all([
     repo.recentAnalyses({ locationId: opts.locationId, agentId: opts.agentId, limit: opts.limit }),
@@ -226,7 +229,7 @@ export async function recommendForAgent(opts: RecommendForAgentOptions): Promise
     return { agentId, callsAnalyzed: 0, kpiAverages, recommendations: [], summary: 'No scored calls yet for this agent.' };
   }
 
-  const agentGoal = (opts.agentId ? await getAgentPrompt(opts.agentId, opts.locationId) : undefined) ?? NO_GOAL;
+  const agentGoal = (isRealAgent ? await getAgentPrompt(opts.agentId!, opts.locationId) : undefined) ?? NO_GOAL;
 
   return synthesizeRecommendations({ agentId, agentGoal, kpiAverages, analyses });
 }

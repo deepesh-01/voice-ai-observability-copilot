@@ -20,6 +20,7 @@ the next action. This is the audit trail that makes a solo "Team of One" build l
 | S-010 | 2026-06-19 | Evaluate "10 skills" article; add WIG + tdd + domain-modeling + quality-gates | ADR-0006 | [session-010.md](./session-010.md) |
 | S-011 | 2026-06-19 | Session lifecycle automation (/end-session skill, SessionStart/End hooks, state) | ADR-0007 | [session-011.md](./session-011.md) |
 | S-012 | 2026-06-19 | Backend foundation: real transcript → KPI scoring (Agent SDK) → Postgres → VoiceAiCallEnd webhook | ADR-0008 (A-003 ✅, A-006 ✅) | [session-012.md](./session-012.md) |
+| S-013 | 2026-06-19 | Recommendations engine (R2.5) + Vue 3 observability dashboard (R2.4/R2.6/E1); QA fixes + browser-screenshot verification | ADR-0009 | [session-013.md](./session-013.md) |
 
 ## Session-close practice (always do this before a session ends)
 

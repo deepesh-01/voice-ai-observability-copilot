@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { config } from '../config.js';
-import { PostgresAnalysisRepository } from './analysisRepository.js';
+import { PostgresAnalysisRepository, UNASSIGNED_AGENT } from './analysisRepository.js';
 import { getPool, closePool } from '../db/pool.js';
 import type { CallAnalysis } from '../analysis/types.js';
 
@@ -64,5 +64,22 @@ run('PostgresAnalysisRepository (integration)', () => {
     const goal = avgs.find((a) => a.kpiKey === 'goal_completion');
     expect(goal?.avgScore).toBe(75);
     expect(goal?.calls).toBe(2);
+  });
+
+  it('filters the unassigned (NULL agent) bucket via the UNASSIGNED_AGENT sentinel', async () => {
+    // A call with no agentId persists agent_id = NULL.
+    const noAgent: CallAnalysis = { ...analysis('t3', 'x', 40, 40), agentId: undefined };
+    await repo.save({ analysis: noAgent, locationId: LOC, rawCall: {} });
+
+    // The sentinel resolves to `agent_id IS NULL` — only the unassigned call, not agentA's.
+    const list = await repo.list({ locationId: LOC, agentId: UNASSIGNED_AGENT });
+    expect(list.map((c) => c.callId)).toEqual(['t3']);
+
+    const avgs = await repo.kpiAverages({ locationId: LOC, agentId: UNASSIGNED_AGENT });
+    expect(avgs.every((a) => a.agentId === null)).toBe(true);
+    expect(avgs.find((a) => a.kpiKey === 'goal_completion')?.avgScore).toBe(40);
+
+    const recent = await repo.recentAnalyses({ locationId: LOC, agentId: UNASSIGNED_AGENT });
+    expect(recent.map((a) => a.callId)).toEqual(['t3']);
   });
 });

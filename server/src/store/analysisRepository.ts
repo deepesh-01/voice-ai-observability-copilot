@@ -30,6 +30,12 @@ export interface KpiAverage {
 }
 
 /**
+ * Reserved agentId meaning "calls with no agent attributed" (SQL NULL). Lets the
+ * dashboard drill into the unassigned bucket — a real string can't carry "IS NULL".
+ */
+export const UNASSIGNED_AGENT = '__unassigned__';
+
+/**
  * Storage for scored calls. The interface is the swap point (ADR-0002 rev): today
  * Postgres, swappable without touching the ingest/scoring code.
  */
@@ -119,7 +125,9 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
   async list(opts: { locationId: string; agentId?: string; limit?: number }): Promise<CallSummary[]> {
     const params: unknown[] = [opts.locationId];
     let where = 'location_id = $1';
-    if (opts.agentId) {
+    if (opts.agentId === UNASSIGNED_AGENT) {
+      where += ' AND agent_id IS NULL';
+    } else if (opts.agentId) {
       params.push(opts.agentId);
       where += ` AND agent_id = $${params.length}`;
     }
@@ -144,7 +152,9 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
   async recentAnalyses(opts: { locationId: string; agentId?: string; limit?: number }): Promise<CallAnalysis[]> {
     const params: unknown[] = [opts.locationId];
     let where = 'location_id = $1';
-    if (opts.agentId) {
+    if (opts.agentId === UNASSIGNED_AGENT) {
+      where += ' AND agent_id IS NULL';
+    } else if (opts.agentId) {
       params.push(opts.agentId);
       where += ` AND agent_id = $${params.length}`;
     }
@@ -161,7 +171,9 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
   async kpiAverages(opts: { locationId: string; agentId?: string }): Promise<KpiAverage[]> {
     const params: unknown[] = [opts.locationId];
     let where = 'location_id = $1';
-    if (opts.agentId) {
+    if (opts.agentId === UNASSIGNED_AGENT) {
+      where += ' AND agent_id IS NULL';
+    } else if (opts.agentId) {
       params.push(opts.agentId);
       where += ` AND agent_id = $${params.length}`;
     }

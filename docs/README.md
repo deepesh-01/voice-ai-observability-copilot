@@ -86,8 +86,8 @@ The authoritative, always-current list of decisions lives in
 | Hosting & app scaffold | ✅ ADR-0004 — OAuth + dashboard shell run; permanent URL via cloudflared |
 | Storage | ✅ Postgres + JSONB (ADR-0008, supersedes ADR-0002 Mongo) |
 | Architecture designed | ✅ Backend pipeline (ingest → score → persist → API) laid down |
-| Implementation | 🟡 Loop live end-to-end on real calls (parse → KPI score → persist → webhook); **recommendations (R2.5) + dashboard (R2.4/E1) pending** |
-| Real-vs-mocked | ✅ Ingestion/scoring/persistence 🟢 live on 5 real calls; see `functional-vs-mocked.md` |
+| Implementation | 🟢 Full loop live on real calls: parse → KPI score → persist → webhook → **recommendations (R2.5)** → **dashboard drill-down (R2.4/R2.6/E1)**. Hardening (token store → Postgres, API auth) pending. |
+| Real-vs-mocked | ✅ Ingestion/scoring/persistence/recommendations/dashboard 🟢 live on 5 real calls; see `functional-vs-mocked.md` |
 | Demo recorded | ⏳ Pending |
 
-_Last updated: 2026-06-19 (Session S-012)._
+_Last updated: 2026-06-19 (Session S-013)._

@@ -18,6 +18,7 @@ Format: lightweight [MADR](https://adr.github.io/madr/). Use [`ADR-template.md`]
 | [ADR-0006](./0006-additional-skills.md) | Additional skills (UI guidelines, TDD, domain modeling, quality gates) | Accepted | E1, E3, E4, R2.2 | 2026-06-19 |
 | [ADR-0007](./0007-session-lifecycle-automation.md) | Session lifecycle automation (start ritual, /end-session, state, exit safety net) | Accepted | C2, D3, E4 | 2026-06-19 |
 | [ADR-0008](./0008-persistence-postgres-and-ingestion.md) | Persistence on Postgres + JSONB; poll + webhook ingestion | Accepted (supersedes ADR-0002 storage) | R2.1, R2.3, R2.4, E2 | 2026-06-19 |
+| [ADR-0009](./0009-dashboard-css-bars-no-charting-lib.md) | Dashboard KPI viz via CSS bars, no charting library | Accepted (closes ADR-0002 charting sub-decision) | R2.4, E1, E4 | 2026-06-19 |
 
 ## Statuses
 

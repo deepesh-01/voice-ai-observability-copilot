@@ -40,5 +40,108 @@ body {
 .btn {
   display: inline-block; background: var(--accent); color: #fff; text-decoration: none;
   padding: 8px 14px; border-radius: 8px; font-size: 14px; border: none; cursor: pointer;
+  font-family: inherit;
+}
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 code { background: #eef0f3; padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+
+/* ── Shared primitives ─────────────────────────────────────────────────────── */
+
+/* Score color classes */
+.score-ok  { color: var(--ok); }
+.score-warn { color: var(--warn); }
+.score-bad  { color: #dc2626; }
+
+/* Priority / severity badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.badge-high   { background: #fef2f2; color: #dc2626; }
+.badge-medium { background: #fffbeb; color: #d97706; }
+.badge-low    { background: #f0fdf4; color: #16a34a; }
+.badge-ok     { background: #f0fdf4; color: #16a34a; }
+.badge-warn   { background: #fffbeb; color: #d97706; }
+.badge-bad    { background: #fef2f2; color: #dc2626; }
+
+/* Kind / category chips */
+.chip {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  background: #eef0f3;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.chip-prompt        { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.chip-script        { background: #f5f3ff; color: #6d28d9; border-color: #ddd6fe; }
+.chip-configuration { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+.chip-process       { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+
+/* KPI bar (reusable) */
+.kpi-bar-track {
+  height: 6px;
+  border-radius: 999px;
+  background: #eef0f3;
+  overflow: hidden;
+}
+.kpi-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* Spinner */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+.spinner-lg {
+  width: 28px;
+  height: 28px;
+  border-width: 3px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Empty / error state blocks */
+.state-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+.state-block-icon {
+  font-size: 28px;
+  opacity: 0.5;
+}
+.state-block h3 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text);
+}
+.state-block p {
+  margin: 0;
+  max-width: 340px;
+}
