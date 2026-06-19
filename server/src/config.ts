@@ -53,7 +53,11 @@ export const config = {
     'voice-ai-dashboard.readonly voice-ai-agents.readonly voice-ai-agent-goals.readonly ' +
       'conversations.readonly conversations/message.readonly conversation-ai.readonly'
   ).trim(),
-  anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? '',
+  /**
+   * Claude access for the scoring pipeline goes through the Claude Agent SDK, which
+   * authenticates with this OAuth token (from `claude setup-token`) — not a bare API key.
+   */
+  claudeOAuthToken: process.env.CLAUDE_CODE_OAUTH_TOKEN ?? '',
 } as const;
 
 /** The OAuth redirect URI registered in the Marketplace app must match this exactly. */
