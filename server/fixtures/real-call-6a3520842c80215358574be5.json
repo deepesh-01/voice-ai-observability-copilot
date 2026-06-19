@@ -1,0 +1,15 @@
+{
+  "contactId": "uJTXf5GbFynDMPPrD16K",
+  "createdAt": "2026-06-19T10:57:08.134Z",
+  "duration": 12,
+  "agentId": "6a35206c88ba8e0f1c707f02",
+  "isAgentDeleted": false,
+  "summary": "The user called the Demo line but was unsure about their reason for calling and did not engage further. The call ended shortly after the initial greeting without any specific assistance provided.",
+  "transcript": "bot:Hey, you have reached Demo. How can I help you today?\nhuman:I am I don't know. \n",
+  "translation": null,
+  "extractedData": {},
+  "trialCall": true,
+  "id": "6a3520842c80215358574be5",
+  "executedCallActions": [],
+  "traceId": "b2515c51-0df8-4198-803d-6f5775b318db"
+}

@@ -116,11 +116,20 @@ export async function checkConnection(installKey?: string): Promise<ConnectionSt
   }
 }
 
-/** Fetch a single call log (includes the transcript when available). */
-export async function getCallLog(callId: string, installKey?: string): Promise<unknown> {
+/**
+ * Fetch a single call log (includes the transcript when available).
+ * The endpoint requires `locationId` as a query param — confirmed live (S-012): omitting it
+ * returns 400 "LocationId is missing in query". `installKey` is that locationId.
+ */
+export async function getCallLog(
+  callId: string,
+  installKey?: string,
+  locationId?: string,
+): Promise<unknown> {
   const token = await getValidAccessToken(installKey);
   const { data } = await axios.get(`${GHL.apiBase}/voice-ai/dashboard/call-logs/${callId}`, {
     headers: { Authorization: `Bearer ${token}`, Version: GHL.apiVersion },
+    params: { locationId: locationId ?? installKey },
   });
   return data;
 }

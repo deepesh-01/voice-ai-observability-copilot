@@ -1,0 +1,15 @@
+{
+  "contactId": "uJTXf5GbFynDMPPrD16K",
+  "createdAt": "2026-06-19T11:15:43.564Z",
+  "duration": 123,
+  "agentId": "6a35206c88ba8e0f1c707f02",
+  "isAgentDeleted": false,
+  "summary": "The user called BrightSmile Dental to book an appointment for tooth pain. The agent scheduled the appointment for the next day at 11 AM and confirmed the user's phone number for contact. The user was informed that a confirmation text would be sent to their phone.",
+  "transcript": "bot:Thanks for calling BrightSmile Dental! This is Jessica. Are you looking to book an appointment, or is there something else I can help with?\nhuman:I wanted to book an appointment for a two pain. \nbot:Got it. Let’s get that scheduled for you. Can I have your full name, please?\nhuman:Yeah. My name is Dibesh. \nbot:Thanks, Dibesh. Do you have a preferred day and time for the appointment, or should I share some available options?\nhuman:Please share some some immediate available of because the pain is, like, spiking too much. \nbot:I’m sorry to hear that, Dibesh. Let’s get you in as soon as possible. We have an opening tomorrow, Saturday, June 20th, at 11 AM, or on Sunday, June 21st, at 10 AM. Would either of these work for you?\nhuman:Saturday eleven AM as soon as possible. \nhuman:That is what I want. \nbot:Alright, I’ve got you down for tomorrow, Saturday, June 20th, at 11 AM. What’s the best phone number to reach you?\nhuman:Seven nine eight. Seven two one five seven two eight. \nbot:Got it. Seven nine eight - seven two one - five seven two eight. Could you also share your email address for the appointment confirmation?\nhuman:Can't it be done just by my phone number? \nbot:Absolutely, Dibesh. We can confirm everything via your phone number. Let me quickly recap: your appointment is scheduled for tomorrow, Saturday, June 20th, at 11 AM for tooth pain. We’ll reach you at seven nine eight - seven two one - five seven two eight if needed. Does that all sound correct?\nhuman:Yeah. But how do I get the call confirmation that the appointment is billed? \nbot:You'll receive a confirmation text on your phone shortly, Dibesh. If you don’t see it, feel free to call us back. Your appointment is all set for tomorrow at 11 AM. Take care, and we’ll see you then!\nhuman:Thank you. \nbot:You're welcome, Dibesh! Take care, and we’ll see you tomorrow at 11 AM. Bye for now!\n",
+  "translation": null,
+  "extractedData": {},
+  "trialCall": true,
+  "id": "6a3524df88ba8e4733707fc9",
+  "executedCallActions": [],
+  "traceId": "ec9d0ce5-fc33-46f5-9f92-dd02142f90c0"
+}

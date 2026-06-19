@@ -58,3 +58,34 @@ the backend port (`8095`). See ADR-0004.
 Visit `https://voai.deepesh-engg.in/oauth/install` → choose the sandbox sub-account →
 land back in the dashboard. Tokens are exchanged and stored; the dashboard then lists the
 connected account.
+
+## E. Create a Voice AI agent & capture a real call (A-003)
+
+The sandbox starts empty (`/voice-ai/agents` and `/voice-ai/dashboard/call-logs` both return
+0). Until one real call exists, the per-call/transcript JSON shape is unknown. Steps below are
+verified against HighLevel support docs (S-012). **Prereqs:** the sub-account uses LC Phone (or
+Twilio) as phone provider; Voice AI is enabled for the location (Agency → AI Employee toggle);
+the agency wallet has credits or an AI-Employee plan (Voice AI bills per minute).
+
+1. **Create the agent** — AI Agents → Voice AI → Agent List → **+ Create Agent** → *Create from
+   Scratch*. Fill **Agent Details** (name, business name, voice, timezone, LLM, greeting). On
+   **Agent Goals** pick *Basic Mode* (no data-collection needed for a test). Save/Publish.
+2. **Place a call** — easiest first: in the agent editor's *Test Your Agent* panel choose
+   **Web Call → Inbound → Start Web Call**, allow the mic, talk for ≥1 exchange, hang up. No
+   phone number or telephony cost. (If the web-call record doesn't surface via the API, assign
+   a US number under Settings → Phone Numbers and use *Phone Call* test, or dial the number for
+   a real inbound/"live" log.)
+3. **Capture the shape** — wait ~30–90s for the transcript to generate, then:
+   ```bash
+   cd server && npx tsx scripts/capture-call-shape.mts
+   # if a TEST/web call doesn't appear, retry with a callType filter:
+   # npx tsx scripts/capture-call-shape.mts <installKey> test
+   ```
+   Writes `server/fixtures/real-call-list.json` + `real-call-<id>.json` (raw responses) and
+   prints the field shape. Then update **A-003** and `functional-vs-mocked.md` with the real
+   shape.
+
+**Gotchas (S-012):** test (web/phone-test) call logs may be UI-only — it's unconfirmed whether
+the List API returns them, so a real *inbound* call may be required for an API-visible record;
+fresh sandboxes may lack wallet credits; Voice AI outbound is US-only and needs KYC. Fixtures
+are real sandbox self-test data and may contain PII — scrub before sharing externally.

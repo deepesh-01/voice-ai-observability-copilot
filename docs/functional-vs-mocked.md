@@ -10,7 +10,8 @@
 |-----------|-----------|-------|-------|
 | HighLevel OAuth (install/callback/refresh) | R1.2 | 🟢 | **Real install completed** — sandbox sub-account `B7TzvBb6H6QvDNdEEhlt` connected; token stored + refresh wired. |
 | HighLevel sandbox & marketplace app install | R1.1, R1.2 | 🟢 | App **Live**; installed on a sandbox sub-account. Adding Voice AI scopes via a new version + reinstall (A-007/A-011). |
-| Transcript ingestion (API) | R2.1, D1.1 | 🟢 | **Live** — `GET /voice-ai/dashboard/call-logs` returns 200 with valid auth+scope. List shape confirmed: `{callLogs:[], totalRecords, traceId}`. Sandbox has 0 calls yet → need a real Voice AI call to capture the transcript/per-call shape (A-003). Webhook vs poll TBD. |
+| Transcript ingestion (API) | R2.1, D1.1 | 🟢 | **Live, real data captured (S-012).** List + Get Call Log both live; real transcripts in `server/fixtures/` (incl. a full 123s booking call). `getCallLog` fixed to pass `locationId`. Capture tool `server/scripts/capture-call-shape.mts`. Still a **manual pull** — no webhook/poll ingestion pipeline yet (TBD). |
+| Voice AI agent config (API write) | R2.2 setup | 🟢 | **Live (S-012).** Agent created in UI, then re-provisioned via `PATCH /voice-ai/agents/:id` (`Version: v3`) with `scripts/configure-agent.mts`. App carries `voice-ai-agents.write` + `voice-ai-agent-goals.write` after reinstall. Goals/actions not yet set (→ A-005). |
 | Observability parameters / KPI config | R2.2 | ⬜ | KPI model proposed in A-004. |
 | KPI scoring & deviation detection (LLM) | R2.3 | ⬜ | Claude-based; structured output. |
 | Unified dashboard | R2.4, E1 | 🟡 | Vue 3 shell built + embeddable; health/installs wired. Full agent/call/issue views pending. |
