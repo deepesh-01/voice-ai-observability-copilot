@@ -13,6 +13,7 @@ import {
   type Turn,
   type UseAction,
 } from '../api';
+import { ensureAgents, displayName } from '../agents';
 
 const props = defineProps<{
   callId: string;
@@ -38,6 +39,7 @@ async function load() {
   error.value = null;
   try {
     storedCall.value = await fetchCall(props.callId);
+    if (storedCall.value?.locationId) await ensureAgents(storedCall.value.locationId);
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Failed to load call.';
   } finally {
@@ -170,7 +172,7 @@ function devKpiLabel(dev: Deviation): string {
             <div class="call-header-details">
               <span v-if="storedCall.callAt">{{ formatTime(storedCall.callAt) }}</span>
               <span v-if="storedCall.durationSec">· {{ formatDuration(storedCall.durationSec) }}</span>
-              <span v-if="analysis.agentId">· Agent: <span class="mono">{{ analysis.agentId }}</span></span>
+              <span v-if="analysis.agentId">· Agent: {{ displayName(storedCall.locationId, analysis.agentId) }}</span>
             </div>
           </div>
           <div class="call-overall-score" :class="scoreClass(analysis.overallScore)">
@@ -201,7 +203,7 @@ function devKpiLabel(dev: Deviation): string {
                 <div class="kpi-bar-track">
                   <div
                     class="kpi-bar-fill"
-                    :style="{ width: `${kpi.score}%`, background: kpiScoreColor(kpi.score) }"
+                    :style="{ '--fill-scale': kpi.score / 100, background: kpiScoreColor(kpi.score) }"
                   ></div>
                 </div>
                 <p class="kpi-rationale">{{ kpi.rationale }}</p>
@@ -347,7 +349,9 @@ function devKpiLabel(dev: Deviation): string {
   font-weight: 600;
   padding: 4px 0 12px;
   display: block;
+  transition: opacity 120ms var(--ease-out);
 }
+.back-btn:active { opacity: 0.6; }
 .back-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
 /* Call header */
@@ -439,7 +443,14 @@ function devKpiLabel(dev: Deviation): string {
 .kpi-scorecard-score { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
 
 .kpi-bar-track { height: 6px; border-radius: 999px; background: #eef0f3; overflow: hidden; }
-.kpi-bar-fill { height: 100%; border-radius: 999px; transition: width 0.45s cubic-bezier(0.4,0,0.2,1); }
+.kpi-bar-fill {
+  height: 100%; width: 100%;
+  transform-origin: left center;
+  transform: scaleX(var(--fill-scale, 0));
+  animation: kpi-grow 560ms var(--ease-out) both;
+}
+@keyframes kpi-grow { from { transform: scaleX(0); } }
+@media (prefers-reduced-motion: reduce) { .kpi-bar-fill { animation: none; } }
 
 .kpi-rationale { font-size: 12px; color: var(--muted); margin: 2px 0 0; line-height: 1.5; }
 
@@ -455,9 +466,12 @@ function devKpiLabel(dev: Deviation): string {
   color: #1d4ed8;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.1s ease;
+  transition: background 100ms var(--ease-out), transform 120ms var(--ease-out);
 }
-.evidence-chip:hover { background: #dbeafe; }
+@media (hover: hover) and (pointer: fine) {
+  .evidence-chip:hover { background: #dbeafe; }
+}
+.evidence-chip:active { transform: scale(0.94); }
 .evidence-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* Deviations */
@@ -495,7 +509,9 @@ function devKpiLabel(dev: Deviation): string {
   padding: 0;
   font-family: inherit;
   margin-left: auto;
+  transition: opacity 120ms var(--ease-out);
 }
+.turn-link:active { opacity: 0.6; }
 .turn-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* Transcript */

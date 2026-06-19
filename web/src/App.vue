@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { fetchInstalls } from './api';
+import { ensureAgents, displayName } from './agents';
 import AgentView from './components/AgentView.vue';
 import CallView from './components/CallView.vue';
 import ConnectionsPanel from './components/ConnectionsPanel.vue';
@@ -18,15 +19,21 @@ const viewStack = ref<View[]>([{ kind: 'overview' }]);
 
 const currentView = computed((): View => viewStack.value[viewStack.value.length - 1]);
 
+/** Respect the OS "reduce motion" setting — jump instead of smooth-scrolling. */
+function scrollToTop() {
+  const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+}
+
 function pushView(v: View) {
   viewStack.value = [...viewStack.value, v];
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  scrollToTop();
 }
 
 function popView() {
   if (viewStack.value.length > 1) {
     viewStack.value = viewStack.value.slice(0, -1);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollToTop();
   }
 }
 
@@ -56,7 +63,7 @@ function backFromAgent() {
 const backLabelForCall = computed((): string => {
   const cur = currentView.value;
   if (cur.kind !== 'call') return 'Back';
-  if (cur.fromAgentId) return `← ${cur.fromAgentId}`;
+  if (cur.fromAgentId) return `← ${displayName(locationId.value, cur.fromAgentId)}`;
   return 'Back to agent';
 });
 
@@ -76,6 +83,8 @@ async function loadInstalls() {
     if (installs.value.length && !selectedLocation.value) {
       selectedLocation.value = installs.value[0];
     }
+    // Warm the agent-name cache so breadcrumbs/labels show names, not ids.
+    if (selectedLocation.value) void ensureAgents(selectedLocation.value);
   } catch {
     backendOk.value = false;
   } finally {
@@ -96,8 +105,9 @@ const locationId = computed(() => selectedLocation.value);
 
 // Switching location resets the drill-down — a stale agent/call belongs to the old
 // location. The :key on the views below forces a fresh load for the new location.
-watch(selectedLocation, () => {
+watch(selectedLocation, (loc) => {
   viewStack.value = [{ kind: 'overview' }];
+  if (loc) void ensureAgents(loc);
 });
 
 // Breadcrumb derivation
@@ -105,8 +115,10 @@ const breadcrumbs = computed(() => {
   return viewStack.value.map((v, i) => {
     let label = '';
     if (v.kind === 'overview') label = 'All Agents';
-    else if (v.kind === 'agent') label = v.agentId.length > 20 ? v.agentId.slice(0, 20) + '…' : v.agentId;
-    else label = v.callId.slice(0, 12) + '…';
+    else if (v.kind === 'agent') {
+      const name = displayName(locationId.value, v.agentId);
+      label = name.length > 24 ? name.slice(0, 24) + '…' : name;
+    } else label = v.callId.slice(0, 12) + '…';
     return { label, index: i };
   });
 });
@@ -114,7 +126,7 @@ const breadcrumbs = computed(() => {
 function jumpToBreadcrumb(index: number) {
   if (index < viewStack.value.length - 1) {
     viewStack.value = viewStack.value.slice(0, index + 1);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollToTop();
   }
 }
 </script>
@@ -273,7 +285,9 @@ function jumpToBreadcrumb(index: number) {
   font-weight: 600;
   transition: background 0.1s ease;
 }
-.crumb:hover:not(:disabled) { background: #eff6ff; }
+@media (hover: hover) and (pointer: fine) {
+  .crumb:hover:not(:disabled) { background: #eff6ff; }
+}
 .crumb:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .crumb--active { color: var(--text); cursor: default; font-weight: 700; }
 .crumb--active:hover { background: none; }

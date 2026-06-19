@@ -201,13 +201,17 @@ export interface RecommendForAgentOptions {
   agentId?: string;
   /** How many recent calls to feed the synthesis (default 50). */
   limit?: number;
+  /** Bypass the cache and re-synthesize (the dashboard's "Refresh" action). */
+  force?: boolean;
   repo?: AnalysisRepository;
 }
 
 /**
- * End-to-end (R2.5): gather an agent's stored analyses + KPI averages from storage,
- * fetch its configured prompt, and synthesize concrete fixes. Returns an empty report
- * (no LLM call) when the agent has no scored calls yet.
+ * End-to-end (R2.5): synthesize concrete fixes for an agent from its stored calls.
+ *
+ * Cached in Postgres keyed by agent + the scored-call count it was built from: the
+ * slow/paid Opus synthesis only runs on a cache miss (new calls since, or `force`).
+ * Returns an empty report (no LLM call) when the agent has no scored calls yet.
  */
 export async function recommendForAgent(opts: RecommendForAgentOptions): Promise<AgentRecommendations> {
   const repo = opts.repo ?? analysisRepo;
@@ -215,6 +219,18 @@ export async function recommendForAgent(opts: RecommendForAgentOptions): Promise
   // never try to fetch a configured prompt for it.
   const isRealAgent = opts.agentId != null && opts.agentId !== UNASSIGNED_AGENT;
   const agentId = isRealAgent ? opts.agentId! : null;
+  const agentKey = opts.agentId ?? ''; // '' = location-wide cache key
+
+  const callCount = await repo.countCalls({ locationId: opts.locationId, agentId: opts.agentId });
+  if (callCount === 0) {
+    return { agentId, callsAnalyzed: 0, kpiAverages: [], recommendations: [], summary: 'No scored calls yet for this agent.' };
+  }
+
+  // Cache hit: same call count → the synthesis is still current.
+  if (!opts.force) {
+    const cached = await repo.getRecommendations({ locationId: opts.locationId, agentKey });
+    if (cached && cached.basedOnCalls === callCount) return cached.report;
+  }
 
   const [analyses, averagesRaw] = await Promise.all([
     repo.recentAnalyses({ locationId: opts.locationId, agentId: opts.agentId, limit: opts.limit }),
@@ -225,11 +241,9 @@ export async function recommendForAgent(opts: RecommendForAgentOptions): Promise
     .filter((a) => a.kpiKey in KPI_BY_KEY)
     .map((a) => ({ key: a.kpiKey as KpiKey, avgScore: a.avgScore, calls: a.calls }));
 
-  if (analyses.length === 0) {
-    return { agentId, callsAnalyzed: 0, kpiAverages, recommendations: [], summary: 'No scored calls yet for this agent.' };
-  }
-
   const agentGoal = (isRealAgent ? await getAgentPrompt(opts.agentId!, opts.locationId) : undefined) ?? NO_GOAL;
 
-  return synthesizeRecommendations({ agentId, agentGoal, kpiAverages, analyses });
+  const report = await synthesizeRecommendations({ agentId, agentGoal, kpiAverages, analyses });
+  await repo.saveRecommendations({ locationId: opts.locationId, agentKey, basedOnCalls: callCount, report });
+  return report;
 }

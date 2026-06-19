@@ -68,6 +68,27 @@ export async function getAgentPrompt(agentId: string, locationId: string): Promi
   return agent?.agentPrompt;
 }
 
+export interface AgentInfo {
+  id: string;
+  /** Human-readable name (`agentName` in GHL); falls back to the id if unnamed. */
+  name: string;
+}
+
+/** List an account's Voice AI agents as {id, name} — drives name resolution in the dashboard. */
+export async function listAgents(locationId: string): Promise<AgentInfo[]> {
+  const token = await getValidAccessToken(locationId);
+  const { data } = await axios.get<{ agents?: { id?: string; _id?: string; agentName?: string; name?: string }[] }>(
+    `${GHL.apiBase}/voice-ai/agents`,
+    { headers: { Authorization: `Bearer ${token}`, Version: 'v3' }, params: { locationId } },
+  );
+  return (data.agents ?? [])
+    .map((a) => {
+      const id = a.id ?? a._id ?? '';
+      return { id, name: a.agentName ?? a.name ?? id };
+    })
+    .filter((a) => a.id);
+}
+
 /** Best-effort extraction of a call id from a List Call Logs item (field name varies). */
 export function callIdOf(call: Record<string, unknown>): string | undefined {
   return (call.callId ?? call.id ?? call._id ?? call.callLogId) as string | undefined;

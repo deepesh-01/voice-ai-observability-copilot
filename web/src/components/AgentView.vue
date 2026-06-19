@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import {
-  agentLabel,
+  shortId,
+  UNASSIGNED_AGENT,
   fetchAnalyses,
   fetchKpiAverages,
   fetchRecommendations,
@@ -14,6 +15,7 @@ import {
   type CallSummary,
   type KpiAverage,
 } from '../api';
+import { ensureAgents, displayName } from '../agents';
 import KpiBar from './KpiBar.vue';
 
 const props = defineProps<{
@@ -47,6 +49,7 @@ async function loadMain() {
     const [callData, kpiData] = await Promise.all([
       fetchAnalyses({ locationId: props.locationId, agentId: props.agentId, limit: 100 }),
       fetchKpiAverages({ locationId: props.locationId, agentId: props.agentId }),
+      ensureAgents(props.locationId),
     ]);
     calls.value = callData;
     // Sort KPIs weakest-first for the profile
@@ -58,14 +61,15 @@ async function loadMain() {
   }
 }
 
-async function loadRecommendations() {
-  if (recsLoaded.value) return;
+async function loadRecommendations(force = false) {
+  if (recsLoaded.value && !force) return;
   loadingRecs.value = true;
   errorRecs.value = null;
   try {
     const data = await fetchRecommendations({
       locationId: props.locationId,
       agentId: props.agentId,
+      refresh: force,
     });
     recommendations.value = data;
     recsLoaded.value = true;
@@ -122,7 +126,8 @@ function kindLabel(kind: string): string {
       <div class="agent-header-top">
         <div>
           <p class="agent-header-label">Agent</p>
-          <h2 class="agent-header-id">{{ agentLabel(agentId) }}</h2>
+          <h2 class="agent-header-name">{{ displayName(locationId, agentId) }}</h2>
+          <p v-if="agentId !== UNASSIGNED_AGENT" class="agent-header-id">{{ shortId(agentId) }}</p>
         </div>
         <div v-if="avgScore !== null" class="agent-header-score" :class="scoreClass(avgScore)">
           {{ avgScore }}
@@ -176,6 +181,12 @@ function kindLabel(kind: string): string {
             <span class="spinner"></span>
             Synthesizing across {{ calls.length }} call{{ calls.length === 1 ? '' : 's' }}…
           </span>
+          <button
+            v-else-if="recommendations"
+            class="recs-refresh"
+            title="Re-run the synthesis (cached otherwise; auto-refreshes when new calls arrive)"
+            @click="loadRecommendations(true)"
+          >↻ Refresh</button>
         </div>
 
         <div v-if="loadingRecs" class="recs-loading-body">
@@ -189,7 +200,7 @@ function kindLabel(kind: string): string {
           <div class="state-block-icon">!</div>
           <h3>Could not load recommendations</h3>
           <p>{{ errorRecs }}</p>
-          <button class="btn" @click="loadRecommendations">Retry</button>
+          <button class="btn" @click="loadRecommendations(true)">Retry</button>
         </div>
 
         <template v-else-if="recommendations">
@@ -205,7 +216,7 @@ function kindLabel(kind: string): string {
             <div
               v-for="(rec, i) in recommendations.recommendations"
               :key="i"
-              class="rec-card"
+              class="rec-card stagger-item"
               :class="`rec-card--${rec.priority}`"
             >
               <div class="rec-card-header">
@@ -308,7 +319,9 @@ function kindLabel(kind: string): string {
   font-weight: 600;
   padding: 4px 0 12px;
   display: block;
+  transition: opacity 120ms var(--ease-out);
 }
+.back-btn:active { opacity: 0.6; }
 .back-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
 /* Agent header */
@@ -329,11 +342,16 @@ function kindLabel(kind: string): string {
   letter-spacing: 0.06em;
   margin: 0 0 4px;
 }
-.agent-header-id {
-  font-size: 17px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+.agent-header-name {
+  font-size: 20px;
+  font-weight: 700;
   margin: 0;
-  word-break: break-all;
+}
+.agent-header-id {
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--muted);
+  margin: 3px 0 0;
 }
 .agent-header-score {
   font-size: 36px;
@@ -362,11 +380,36 @@ function kindLabel(kind: string): string {
 .section-title { margin: 0 0 14px; font-size: 15px; font-weight: 700; }
 
 .kpi-profile { display: flex; flex-direction: column; gap: 10px; }
+/* Cascade the bar reveals so the profile reads top-down (:deep reaches into KpiBar). */
+.kpi-profile > :nth-child(1) :deep(.kpi-bar-fill) { animation-delay: 40ms; }
+.kpi-profile > :nth-child(2) :deep(.kpi-bar-fill) { animation-delay: 90ms; }
+.kpi-profile > :nth-child(3) :deep(.kpi-bar-fill) { animation-delay: 140ms; }
+.kpi-profile > :nth-child(4) :deep(.kpi-bar-fill) { animation-delay: 190ms; }
+.kpi-profile > :nth-child(5) :deep(.kpi-bar-fill) { animation-delay: 240ms; }
+.kpi-profile > :nth-child(6) :deep(.kpi-bar-fill) { animation-delay: 290ms; }
 
 /* Recommendations */
 .recs-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
 .recs-header .section-title { margin-bottom: 0; }
 .recs-synthesizing { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); }
+.recs-refresh {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 4px 10px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  transition: background 120ms var(--ease-out), transform 120ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .recs-refresh:hover { background: #eff6ff; }
+}
+.recs-refresh:active { transform: scale(0.97); }
+.recs-refresh:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .recs-loading-body { padding: 8px 0 4px; }
 
 .recs-summary {
@@ -439,9 +482,13 @@ function kindLabel(kind: string): string {
   cursor: pointer;
   color: var(--accent);
   font-weight: 600;
-  transition: background 0.12s ease;
+  transition: background 120ms var(--ease-out), border-color 120ms var(--ease-out),
+    transform 120ms var(--ease-out);
 }
-.evidence-call-link:hover { background: #dbeafe; border-color: #93c5fd; }
+@media (hover: hover) and (pointer: fine) {
+  .evidence-call-link:hover { background: #dbeafe; border-color: #93c5fd; }
+}
+.evidence-call-link:active { transform: scale(0.96); }
 .evidence-call-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* Call table */
@@ -474,10 +521,13 @@ function kindLabel(kind: string): string {
   cursor: pointer;
   font-family: inherit;
   text-align: left;
-  transition: background 0.1s ease;
+  transition: background 100ms var(--ease-out);
 }
 .call-row:last-child { border-bottom: none; }
-.call-row:hover { background: #f7f8fa; }
+@media (hover: hover) and (pointer: fine) {
+  .call-row:hover { background: #f7f8fa; }
+}
+.call-row:active { background: #eef2f9; }
 .call-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 4px; }
 
 .call-score {

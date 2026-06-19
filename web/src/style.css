@@ -7,6 +7,9 @@
   --accent: #2563eb;
   --ok: #16a34a;
   --warn: #d97706;
+  /* Strong custom easings — the built-in CSS curves are too weak to feel intentional. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -41,11 +44,14 @@ body {
   display: inline-block; background: var(--accent); color: #fff; text-decoration: none;
   padding: 8px 14px; border-radius: 8px; font-size: 14px; border: none; cursor: pointer;
   font-family: inherit;
+  transition: transform 140ms var(--ease-out);
 }
 .btn:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+/* Press feedback: the UI confirms it heard the click. */
+.btn:active:not(:disabled) { transform: scale(0.97); }
 code { background: #eef0f3; padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
 
 /* ── Shared primitives ─────────────────────────────────────────────────────── */
@@ -90,7 +96,9 @@ code { background: #eef0f3; padding: 1px 5px; border-radius: 4px; font-size: 12.
 .chip-configuration { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
 .chip-process       { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
 
-/* KPI bar (reusable) */
+/* KPI bar (reusable). The fill is full-width and revealed via transform: scaleX()
+ * (GPU-accelerated — never animate `width`), clipped by the rounded track. The
+ * resting scale comes from --fill-scale (0–1); it grows from 0 on mount. */
 .kpi-bar-track {
   height: 6px;
   border-radius: 999px;
@@ -99,9 +107,26 @@ code { background: #eef0f3; padding: 1px 5px; border-radius: 4px; font-size: 12.
 }
 .kpi-bar-fill {
   height: 100%;
-  border-radius: 999px;
-  transition: width 0.4s ease;
+  width: 100%;
+  transform-origin: left center;
+  transform: scaleX(var(--fill-scale, 0));
+  animation: kpi-grow 560ms var(--ease-out) both;
 }
+@keyframes kpi-grow { from { transform: scaleX(0); } }
+
+/* Staggered entrance for list items (cards, recommendations). Decorative — used on
+ * occasional views, never on rapidly-repeated actions. */
+.stagger-item { animation: enter-up 280ms var(--ease-out) both; }
+@keyframes enter-up {
+  from { opacity: 0; transform: translateY(8px); }
+}
+.stagger-item:nth-child(1) { animation-delay: 0ms; }
+.stagger-item:nth-child(2) { animation-delay: 45ms; }
+.stagger-item:nth-child(3) { animation-delay: 90ms; }
+.stagger-item:nth-child(4) { animation-delay: 135ms; }
+.stagger-item:nth-child(5) { animation-delay: 180ms; }
+.stagger-item:nth-child(6) { animation-delay: 225ms; }
+.stagger-item:nth-child(n + 7) { animation-delay: 270ms; }
 
 /* Spinner */
 .spinner {
@@ -144,4 +169,12 @@ code { background: #eef0f3; padding: 1px 5px; border-radius: 4px; font-size: 12.
 .state-block p {
   margin: 0;
   max-width: 340px;
+}
+
+/* Reduced motion: drop entrance/movement animations and snap KPI bars to their
+ * resting state. The spinner keeps rotating — it communicates ongoing work. */
+@media (prefers-reduced-motion: reduce) {
+  .stagger-item { animation: none; }
+  .kpi-bar-fill { animation: none; }
+  .btn:active:not(:disabled) { transform: none; }
 }

@@ -53,6 +53,19 @@ export async function initSchema(): Promise<void> {
       PRIMARY KEY (call_id, kpi_key)
     );
     CREATE INDEX IF NOT EXISTS idx_call_kpi_agent_key ON call_kpi (agent_id, kpi_key);
+
+    -- Cached cross-call recommendation synthesis (R2.5). Reused while based_on_calls
+    -- still matches the agent's scored-call count, so the slow/paid Opus synthesis
+    -- only re-runs when new calls arrive or on explicit refresh.
+    -- agent_id: a real id, '__unassigned__' (null-agent bucket), or '' (location-wide).
+    CREATE TABLE IF NOT EXISTS agent_recommendations (
+      location_id    TEXT NOT NULL,
+      agent_id       TEXT NOT NULL,
+      based_on_calls INTEGER NOT NULL,
+      report         JSONB NOT NULL,
+      generated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+      PRIMARY KEY (location_id, agent_id)
+    );
   `;
   await getPool().query(sql);
 }

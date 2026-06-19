@@ -92,10 +92,12 @@ describe('deriveAgents', () => {
   });
 });
 
-describe('agentLabel', () => {
-  it('renders the unassigned sentinel readably and passes real ids through', () => {
-    expect(agentLabel(UNASSIGNED_AGENT)).toBe('Unassigned (no agent ID)');
-    expect(agentLabel('6a35206c')).toBe('6a35206c');
+describe('agentLabel / shortId', () => {
+  it('renders the unassigned sentinel readably and shortens long ids', () => {
+    expect(agentLabel(UNASSIGNED_AGENT)).toBe('Unassigned');
+    expect(agentLabel('6a35206c88ba8e0f1c707f02')).toBe('6a35206c…');
+    // Short ids pass through unchanged.
+    expect(agentLabel('abc123')).toBe('abc123');
   });
 });
 

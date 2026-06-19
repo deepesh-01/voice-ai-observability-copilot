@@ -1,5 +1,5 @@
 import { getPool, initSchema } from '../db/pool.js';
-import type { CallAnalysis } from '../analysis/types.js';
+import type { AgentRecommendations, CallAnalysis } from '../analysis/types.js';
 
 /** A scored call plus the metadata we persist alongside the analysis. */
 export interface StoredCall {
@@ -49,6 +49,12 @@ export interface AnalysisRepository {
   recentAnalyses(opts: { locationId: string; agentId?: string; limit?: number }): Promise<CallAnalysis[]>;
   /** Avg score per (agent, KPI) — the analytics query Postgres is here for. */
   kpiAverages(opts: { locationId: string; agentId?: string }): Promise<KpiAverage[]>;
+  /** Count of scored calls (the cache-invalidation signal for recommendations). */
+  countCalls(opts: { locationId: string; agentId?: string }): Promise<number>;
+  /** Cached recommendation report for an agent key ('' = location-wide), or null. */
+  getRecommendations(opts: { locationId: string; agentKey: string }): Promise<{ report: AgentRecommendations; basedOnCalls: number } | null>;
+  /** Upsert the cached recommendation report for an agent key. */
+  saveRecommendations(opts: { locationId: string; agentKey: string; basedOnCalls: number; report: AgentRecommendations }): Promise<void>;
 }
 
 export class PostgresAnalysisRepository implements AnalysisRepository {
@@ -190,6 +196,39 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
       avgScore: r.avg_score,
       calls: r.calls,
     }));
+  }
+
+  async countCalls(opts: { locationId: string; agentId?: string }): Promise<number> {
+    const params: unknown[] = [opts.locationId];
+    let where = 'location_id = $1';
+    if (opts.agentId === UNASSIGNED_AGENT) {
+      where += ' AND agent_id IS NULL';
+    } else if (opts.agentId) {
+      params.push(opts.agentId);
+      where += ` AND agent_id = $${params.length}`;
+    }
+    const { rows } = await getPool().query(`SELECT COUNT(*)::int AS n FROM call_analysis WHERE ${where}`, params);
+    return rows[0]?.n ?? 0;
+  }
+
+  async getRecommendations(opts: { locationId: string; agentKey: string }): Promise<{ report: AgentRecommendations; basedOnCalls: number } | null> {
+    const { rows } = await getPool().query(
+      'SELECT report, based_on_calls FROM agent_recommendations WHERE location_id = $1 AND agent_id = $2',
+      [opts.locationId, opts.agentKey],
+    );
+    const row = rows[0];
+    if (!row) return null;
+    return { report: row.report as AgentRecommendations, basedOnCalls: row.based_on_calls };
+  }
+
+  async saveRecommendations(opts: { locationId: string; agentKey: string; basedOnCalls: number; report: AgentRecommendations }): Promise<void> {
+    await getPool().query(
+      `INSERT INTO agent_recommendations (location_id, agent_id, based_on_calls, report, generated_at)
+       VALUES ($1,$2,$3,$4, now())
+       ON CONFLICT (location_id, agent_id) DO UPDATE SET
+         based_on_calls = EXCLUDED.based_on_calls, report = EXCLUDED.report, generated_at = now()`,
+      [opts.locationId, opts.agentKey, opts.basedOnCalls, JSON.stringify(opts.report)],
+    );
   }
 }
 

@@ -29,9 +29,11 @@ run('PostgresAnalysisRepository (integration)', () => {
   beforeAll(async () => {
     await repo.init();
     await getPool().query('DELETE FROM call_analysis WHERE location_id = $1', [LOC]);
+    await getPool().query('DELETE FROM agent_recommendations WHERE location_id = $1', [LOC]);
   });
   afterAll(async () => {
     await getPool().query('DELETE FROM call_analysis WHERE location_id = $1', [LOC]);
+    await getPool().query('DELETE FROM agent_recommendations WHERE location_id = $1', [LOC]);
     await closePool();
   });
 
@@ -81,5 +83,29 @@ run('PostgresAnalysisRepository (integration)', () => {
 
     const recent = await repo.recentAnalyses({ locationId: LOC, agentId: UNASSIGNED_AGENT });
     expect(recent.map((a) => a.callId)).toEqual(['t3']);
+  });
+
+  it('counts calls and caches/reads back the recommendation report', async () => {
+    // agentA has 2 calls (t1, t2) in this location.
+    expect(await repo.countCalls({ locationId: LOC, agentId: 'agentA' })).toBe(2);
+
+    const report = {
+      agentId: 'agentA',
+      callsAnalyzed: 2,
+      kpiAverages: [],
+      recommendations: [],
+      summary: 'cached summary',
+    };
+    await repo.saveRecommendations({ locationId: LOC, agentKey: 'agentA', basedOnCalls: 2, report });
+
+    const got = await repo.getRecommendations({ locationId: LOC, agentKey: 'agentA' });
+    expect(got?.basedOnCalls).toBe(2);
+    expect(got?.report.summary).toBe('cached summary');
+
+    // Upsert: re-saving the same key replaces (no duplicate-key error).
+    await repo.saveRecommendations({ locationId: LOC, agentKey: 'agentA', basedOnCalls: 3, report });
+    expect((await repo.getRecommendations({ locationId: LOC, agentKey: 'agentA' }))?.basedOnCalls).toBe(3);
+
+    expect(await repo.getRecommendations({ locationId: LOC, agentKey: 'nope' })).toBeNull();
   });
 });

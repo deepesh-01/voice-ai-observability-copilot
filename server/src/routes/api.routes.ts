@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { listInstalls } from '../store/tokenStore.js';
-import { listCallLogs, getCallLog, checkConnection } from '../ghl/api.js';
+import { listCallLogs, getCallLog, checkConnection, listAgents } from '../ghl/api.js';
 import { analysisRepo } from '../store/analysisRepository.js';
 import { recommendForAgent } from '../analysis/recommend.js';
 
@@ -16,6 +16,20 @@ apiRouter.get('/installs', async (_req, res) => {
 /** Live HighLevel connection status for one install — probes the API, not just local state. */
 apiRouter.get('/installs/:key/status', async (req, res) => {
   res.json({ key: req.params.key, ...(await checkConnection(req.params.key)) });
+});
+
+/** Voice AI agents for a location as {id, name} — lets the dashboard show names, not raw ids. */
+apiRouter.get('/agents', async (req, res) => {
+  const locationId = str(req.query.locationId);
+  if (!locationId) {
+    res.status(400).json({ error: 'locationId query param is required.' });
+    return;
+  }
+  try {
+    res.json({ agents: await listAgents(locationId) });
+  } catch (err) {
+    res.status(502).json({ error: err instanceof Error ? err.message : 'upstream error' });
+  }
 });
 
 /** List Voice AI call logs for a location. */
@@ -109,6 +123,7 @@ apiRouter.get('/recommendations', async (req, res) => {
       locationId,
       agentId: str(req.query.agentId),
       limit: req.query.limit ? Number(req.query.limit) : undefined,
+      force: req.query.refresh === '1' || req.query.refresh === 'true',
     });
     res.json(report);
   } catch (err) {

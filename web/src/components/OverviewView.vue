@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { agentLabel, deriveAgents, fetchAnalyses, fetchKpiAverages, scoreClass, scoreColor, type AgentSummary } from '../api';
+import { deriveAgents, fetchAnalyses, fetchKpiAverages, scoreClass, scoreColor, shortId, UNASSIGNED_AGENT, type AgentSummary } from '../api';
+import { ensureAgents, displayName } from '../agents';
 import KpiBar from './KpiBar.vue';
 
 const props = defineProps<{
@@ -23,6 +24,7 @@ async function load() {
     const [calls, kpiAvgs] = await Promise.all([
       fetchAnalyses({ locationId: props.locationId, limit: 500 }),
       fetchKpiAverages({ locationId: props.locationId }),
+      ensureAgents(props.locationId),
     ]);
     totalCalls.value = calls.length;
     agents.value = deriveAgents(calls, kpiAvgs);
@@ -88,13 +90,15 @@ const overallAvg = computed(() => {
       <button
         v-for="agent in agents"
         :key="agent.agentId"
-        class="agent-card"
+        class="agent-card stagger-item"
         @click="emit('selectAgent', agent.agentId)"
       >
         <div class="agent-card-header">
           <div class="agent-id-row">
-            <span class="agent-id">{{ agentLabel(agent.agentId) }}</span>
-            <span class="agent-calls">{{ agent.callCount }} call{{ agent.callCount === 1 ? '' : 's' }}</span>
+            <span class="agent-name">{{ displayName(locationId, agent.agentId) }}</span>
+            <span class="agent-calls">
+              <span v-if="agent.agentId !== UNASSIGNED_AGENT" class="agent-id-sub">{{ shortId(agent.agentId) }} · </span>{{ agent.callCount }} call{{ agent.callCount === 1 ? '' : 's' }}
+            </span>
           </div>
           <div class="agent-score" :class="scoreClass(agent.avgScore)">
             {{ agent.avgScore }}
@@ -182,12 +186,16 @@ const overallAvg = computed(() => {
   text-align: left;
   cursor: pointer;
   font-family: inherit;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 150ms var(--ease-out), box-shadow 150ms var(--ease-out),
+    transform 140ms var(--ease-out);
 }
-.agent-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.08);
+@media (hover: hover) and (pointer: fine) {
+  .agent-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 2px 12px rgba(37, 99, 235, 0.08);
+  }
 }
+.agent-card:active { transform: scale(0.99); }
 .agent-card:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -207,20 +215,23 @@ const overallAvg = computed(() => {
   min-width: 0;
 }
 
-.agent-id {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 13px;
-  font-weight: 600;
+.agent-name {
+  font-size: 15px;
+  font-weight: 700;
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 180px;
+  max-width: 220px;
 }
 
 .agent-calls {
   font-size: 12px;
   color: var(--muted);
+}
+.agent-id-sub {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
 }
 
 .agent-score {

@@ -37,6 +37,11 @@ Thumbs.db
 coverage/
 .nyc_output/
 
+# Playwright E2E artifacts (videos, traces, reports)
+**/test-results/
+**/playwright-report/
+**/.playwright/
+
 # Source PDFs (assignment briefs — keep out of the public repo)
 *.pdf
 

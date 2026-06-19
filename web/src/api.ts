@@ -280,14 +280,32 @@ export async function fetchKpiAverages(params: {
   return validateKpiAveragesResponse(data).averages;
 }
 
+export interface AgentInfo {
+  id: string;
+  name: string;
+}
+
+export async function fetchAgents(locationId: string): Promise<AgentInfo[]> {
+  const data = await apiFetch(`/api/agents?locationId=${encodeURIComponent(locationId)}`);
+  const obj = assertObject(data, 'AgentsResponse');
+  return assertArray(obj.agents, 'agents').map((item, i) => {
+    const a = assertObject(item, `agents[${i}]`);
+    const id = assertString(a.id, `agents[${i}].id`);
+    return { id, name: typeof a.name === 'string' && a.name ? a.name : id };
+  });
+}
+
 export async function fetchRecommendations(params: {
   locationId: string;
   agentId?: string;
   limit?: number;
+  /** Force a fresh Opus synthesis (bypass the server-side cache). */
+  refresh?: boolean;
 }): Promise<AgentRecommendations> {
   const qs = new URLSearchParams({ locationId: params.locationId });
   if (params.agentId) qs.set('agentId', params.agentId);
   if (params.limit) qs.set('limit', String(params.limit));
+  if (params.refresh) qs.set('refresh', '1');
   const data = await apiFetch(`/api/recommendations?${qs}`);
   const obj = assertObject(data, 'AgentRecommendations');
   return {
@@ -349,9 +367,14 @@ export function parseTranscript(raw: unknown): Turn[] {
  */
 export const UNASSIGNED_AGENT = '__unassigned__';
 
-/** Human label for an agent id (renders the unassigned sentinel readably). */
+/** Short, readable form of an opaque agent id — used as secondary/traceability text. */
+export function shortId(agentId: string): string {
+  return agentId.length > 10 ? `${agentId.slice(0, 8)}…` : agentId;
+}
+
+/** Fallback label when no resolved name is available (renders the unassigned sentinel readably). */
 export function agentLabel(agentId: string): string {
-  return agentId === UNASSIGNED_AGENT ? 'Unassigned (no agent ID)' : agentId;
+  return agentId === UNASSIGNED_AGENT ? 'Unassigned' : shortId(agentId);
 }
 
 /** Derive an ordered agent list from calls + KPI averages. */

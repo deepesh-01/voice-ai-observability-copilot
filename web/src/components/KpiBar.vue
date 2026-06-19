@@ -14,7 +14,7 @@ const props = defineProps<{
 
 const label = computed(() => kpiLabel(props.kpiKey));
 const fillColor = computed(() => scoreColor(props.score));
-const fillWidth = computed(() => `${Math.max(0, Math.min(100, props.score))}%`);
+const fillScale = computed(() => Math.max(0, Math.min(100, props.score)) / 100);
 </script>
 
 <template>
@@ -28,7 +28,7 @@ const fillWidth = computed(() => `${Math.max(0, Math.min(100, props.score))}%`);
       </div>
     </div>
     <div class="kpi-bar-track">
-      <div class="kpi-bar-fill" :style="{ width: fillWidth, background: fillColor }"></div>
+      <div class="kpi-bar-fill" :style="{ '--fill-scale': fillScale, background: fillColor }"></div>
     </div>
   </div>
 </template>
@@ -86,7 +86,14 @@ const fillWidth = computed(() => `${Math.max(0, Math.min(100, props.score))}%`);
 }
 .kpi-bar-fill {
   height: 100%;
-  border-radius: 999px;
-  transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  transform-origin: left center;
+  transform: scaleX(var(--fill-scale, 0));
+  animation: kpi-grow 560ms var(--ease-out) both;
+}
+@keyframes kpi-grow { from { transform: scaleX(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .kpi-bar-fill { animation: none; }
 }
 </style>
