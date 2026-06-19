@@ -109,6 +109,9 @@ Scored calls are persisted to **Postgres** (`AnalysisRepository`). The scoring e
    ```
 3. **Read** via the API: `GET /api/analyses?locationId=<id>`, `/api/analyses/:callId`,
    `/api/kpis/averages?locationId=<id>`.
-4. **Webhook (near-real-time)** — point GHL's *Transcript Generated* trigger at
-   `POST https://voai.deepesh-engg.in/webhooks/ghl/voice-ai`; it scores + persists that call.
-   (Payload-shape wiring still pending — A-006.)
+4. **Webhook (primary, near-real-time)** — in the marketplace app: **Build → Advanced
+   Settings → Webhooks** → URL `https://voai.deepesh-engg.in/webhooks/ghl/voice-ai` →
+   toggle **`VoiceAiCallEnd`** → save. Confirmed live (S-012): a real **web call** triggers
+   it, the Ed25519 signature **verifies**, and the call is scored + persisted in seconds. The
+   handler acks `202` immediately and ingests async. Signatures are enforced
+   (`WEBHOOK_REQUIRE_SIGNATURE=true`); the poll path (step 2) is the backfill safety net.

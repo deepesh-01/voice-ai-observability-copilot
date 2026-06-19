@@ -42,3 +42,6 @@ coverage/
 
 # Session lifecycle runtime state (machine-specific)
 .claude/state/
+
+# transient webhook payload capture (may contain headers/PII)
+server/fixtures/webhook-sample.json

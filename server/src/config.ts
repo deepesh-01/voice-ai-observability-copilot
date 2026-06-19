@@ -60,6 +60,12 @@ export const config = {
   claudeOAuthToken: process.env.CLAUDE_CODE_OAUTH_TOKEN ?? '',
   /** Postgres connection (ADR-0002 rev). Empty → persistence is unavailable. */
   databaseUrl: process.env.DATABASE_URL ?? '',
+  /**
+   * Reject webhooks whose Ed25519 signature doesn't verify. Default false during
+   * bring-up (so setup/testing isn't blocked); flip to true once a real
+   * VoiceAiCallEnd delivery confirms the public key. (WEBHOOK_REQUIRE_SIGNATURE=true)
+   */
+  requireWebhookSignature: process.env.WEBHOOK_REQUIRE_SIGNATURE === 'true',
 } as const;
 
 /** The OAuth redirect URI registered in the Marketplace app must match this exactly. */

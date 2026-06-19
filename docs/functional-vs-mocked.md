@@ -18,7 +18,7 @@
 | Unified dashboard | R2.4, E1 | 🟡 | Vue 3 shell built + embeddable; health/installs wired. Full agent/call/issue views pending. |
 | Recommendations engine | R2.5 | ⬜ | Claude-based synthesis over call history. |
 | Persistence (analyses + KPIs) | R2.3, R2.4 | 🟢 | **Live, real Postgres (S-012, ADR-0008).** `AnalysisRepository` (swappable interface) on Postgres+JSONB: `call_analysis` (JSONB fidelity + typed/indexed dims) + `call_kpi` (flat rows for `GROUP BY` analytics). Real integration tests against local Postgres. 4 real calls persisted; KPI averages query verified. |
-| Ingestion pipeline | R2.1 | 🟢/🟡 | **Poll: live (S-012)** — `scripts/ingest.mts` / `pollIngest.ts` scored + persisted 4 real sandbox calls end-to-end. **Webhook: 🟡** — `POST /webhooks/ghl/voice-ai` endpoint built, but GHL "Transcript Generated" trigger wiring + payload shape pending (A-006). |
+| Ingestion pipeline | R2.1 | 🟢 | **Webhook (primary) live + verified (S-012).** Marketplace `VoiceAiCallEnd` → `POST /webhooks/ghl/voice-ai`: a real **web call** triggered it, **Ed25519 signature verified**, inline transcript scored + persisted in seconds. Handler acks **202 in ~0.03s** then ingests async (GHL retries slow handlers; `inFlight` set + idempotent `has()` dedupe retries). **Poll** (`scripts/ingest.mts`) is the backfill safety net. Signature enforcement opt-in via `WEBHOOK_REQUIRE_SIGNATURE`. |
 | Dashboard API (read) | R2.4 | 🟢 | **Live (S-012).** `GET /api/analyses`, `/api/analyses/:callId`, `/api/kpis/averages` serve persisted data; verified returning real scored calls. |
 | "Use Actions" segment flagging | R2.6 | 🟡 | Modeled in the scorer output (`UseAction` spans of turns to review) — not yet surfaced in the UI or tied to `extractedData`/`executedCallActions` (A-005). |
 

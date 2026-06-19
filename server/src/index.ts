@@ -11,7 +11,15 @@ import { analysisRepo } from './store/analysisRepository.js';
 const here = dirname(fileURLToPath(import.meta.url));
 const app = express();
 
-app.use(express.json());
+// Keep the raw request bytes around so webhook signatures can be verified
+// (signature is computed over the exact body, not the re-serialized JSON).
+app.use(
+  express.json({
+    verify: (req, _res, buf) => {
+      (req as express.Request & { rawBody?: Buffer }).rawBody = buf;
+    },
+  }),
+);
 
 /**
  * Allow embedding inside the HighLevel UI (Custom Page iframe — R1.2).
