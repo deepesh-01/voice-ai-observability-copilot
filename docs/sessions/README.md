@@ -19,6 +19,7 @@ the next action. This is the audit trail that makes a solo "Team of One" build l
 | S-009 | 2026-06-19 | Ingestion pipeline live (200, empty) — connection + Voice AI scope verified | — (A-007/A-011 ✅) | [session-009.md](./session-009.md) |
 | S-010 | 2026-06-19 | Evaluate "10 skills" article; add WIG + tdd + domain-modeling + quality-gates | ADR-0006 | [session-010.md](./session-010.md) |
 | S-011 | 2026-06-19 | Session lifecycle automation (/end-session skill, SessionStart/End hooks, state) | ADR-0007 | [session-011.md](./session-011.md) |
+| S-012 | 2026-06-19 | Backend foundation: real transcript → KPI scoring (Agent SDK) → Postgres → VoiceAiCallEnd webhook | ADR-0008 (A-003 ✅, A-006 ✅) | [session-012.md](./session-012.md) |
 
 ## Session-close practice (always do this before a session ends)
 

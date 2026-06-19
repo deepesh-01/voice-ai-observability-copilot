@@ -84,8 +84,10 @@ The authoritative, always-current list of decisions lives in
 | Tech stack chosen | ✅ ADR-0002 |
 | Specialized agents stood up | ✅ ADR-0003 — 6 agents in `.claude/agents/` |
 | Hosting & app scaffold | ✅ ADR-0004 — OAuth + dashboard shell run; permanent URL via cloudflared |
-| Architecture designed | 🟡 Setup layer done; KPI/ingestion architecture next |
-| Implementation | 🟡 OAuth + ingestion client scaffolded; scoring/recommendations pending |
+| Storage | ✅ Postgres + JSONB (ADR-0008, supersedes ADR-0002 Mongo) |
+| Architecture designed | ✅ Backend pipeline (ingest → score → persist → API) laid down |
+| Implementation | 🟡 Loop live end-to-end on real calls (parse → KPI score → persist → webhook); **recommendations (R2.5) + dashboard (R2.4/E1) pending** |
+| Real-vs-mocked | ✅ Ingestion/scoring/persistence 🟢 live on 5 real calls; see `functional-vs-mocked.md` |
 | Demo recorded | ⏳ Pending |
 
-_Last updated: 2026-06-19 (Session S-008)._
+_Last updated: 2026-06-19 (Session S-012)._
