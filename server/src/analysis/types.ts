@@ -72,6 +72,54 @@ export interface UseAction {
   endTurn: number;
 }
 
+/** What kind of change a recommendation asks the operator to make. */
+export type RecommendationKind = 'prompt' | 'script' | 'configuration' | 'process';
+
+/**
+ * One actionable fix for an agent, synthesized across its call history (R2.5).
+ * The unit the dashboard surfaces next to the failing KPI (UX-003): problem +
+ * concrete fix + the calls that evidence it.
+ */
+export interface Recommendation {
+  /** Short title of the issue this addresses. */
+  title: string;
+  kind: RecommendationKind;
+  /** How much this matters — reuses the deviation severity scale. */
+  priority: Severity;
+  /** The KPI this most improves, or 'general' when it spans several. */
+  kpi: KpiKey | 'general';
+  /** What's going wrong, grounded in the call history. */
+  problem: string;
+  /** The concrete change to make — a copy-pasteable prompt/script edit where possible. */
+  fix: string;
+  /** Why this should help / the expected impact. */
+  rationale: string;
+  /** Call ids that evidence the problem (drives "jump to the calls"). */
+  evidenceCallIds: string[];
+}
+
+/** Per-KPI average over an agent's calls — the aggregate the synthesis reasons over. */
+export interface KpiAverageSnapshot {
+  key: KpiKey;
+  avgScore: number;
+  calls: number;
+}
+
+/**
+ * The recommendations report for one agent — the output of the cross-call synthesis
+ * (R2.5) and the input to the dashboard's "recommendations for this agent" view (D2).
+ */
+export interface AgentRecommendations {
+  agentId: string | null;
+  /** How many scored calls fed the synthesis. */
+  callsAnalyzed: number;
+  /** The KPI averages the synthesis was given (weakest first). */
+  kpiAverages: KpiAverageSnapshot[];
+  recommendations: Recommendation[];
+  /** Overall narrative for the agent's performance. */
+  summary: string;
+}
+
 /** The full analysis of one call — the scorer's output and the dashboard's input. */
 export interface CallAnalysis {
   callId: string;

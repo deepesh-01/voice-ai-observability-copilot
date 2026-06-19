@@ -39,6 +39,8 @@ export interface AnalysisRepository {
   save(rec: StoredCall): Promise<void>;
   get(callId: string): Promise<StoredCall | null>;
   list(opts: { locationId: string; agentId?: string; limit?: number }): Promise<CallSummary[]>;
+  /** Full analyses for the most recent calls — the evidence the recommendation synthesis reads. */
+  recentAnalyses(opts: { locationId: string; agentId?: string; limit?: number }): Promise<CallAnalysis[]>;
   /** Avg score per (agent, KPI) — the analytics query Postgres is here for. */
   kpiAverages(opts: { locationId: string; agentId?: string }): Promise<KpiAverage[]>;
 }
@@ -137,6 +139,23 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
       durationSec: r.duration_sec ?? undefined,
       callAt: r.call_at ? new Date(r.call_at).toISOString() : undefined,
     }));
+  }
+
+  async recentAnalyses(opts: { locationId: string; agentId?: string; limit?: number }): Promise<CallAnalysis[]> {
+    const params: unknown[] = [opts.locationId];
+    let where = 'location_id = $1';
+    if (opts.agentId) {
+      params.push(opts.agentId);
+      where += ` AND agent_id = $${params.length}`;
+    }
+    params.push(Math.min(opts.limit ?? 50, 200));
+    const { rows } = await getPool().query(
+      `SELECT analysis FROM call_analysis WHERE ${where}
+         ORDER BY call_at DESC NULLS LAST, scored_at DESC
+         LIMIT $${params.length}`,
+      params,
+    );
+    return rows.map((r) => r.analysis as CallAnalysis);
   }
 
   async kpiAverages(opts: { locationId: string; agentId?: string }): Promise<KpiAverage[]> {

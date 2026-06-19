@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { listInstalls } from '../store/tokenStore.js';
 import { listCallLogs, getCallLog, checkConnection } from '../ghl/api.js';
 import { analysisRepo } from '../store/analysisRepository.js';
+import { recommendForAgent } from '../analysis/recommend.js';
 
 export const apiRouter = Router();
 
@@ -90,5 +91,27 @@ apiRouter.get('/kpis/averages', async (req, res) => {
     res.json({ averages: await analysisRepo.kpiAverages({ locationId, agentId: str(req.query.agentId) }) });
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : 'storage error' });
+  }
+});
+
+/**
+ * AI-generated recommendations for an agent, synthesized across its call history (R2.5).
+ * Computed on demand: gathers stored analyses + KPI averages, then runs the Opus synthesis.
+ */
+apiRouter.get('/recommendations', async (req, res) => {
+  const locationId = str(req.query.locationId);
+  if (!locationId) {
+    res.status(400).json({ error: 'locationId query param is required.' });
+    return;
+  }
+  try {
+    const report = await recommendForAgent({
+      locationId,
+      agentId: str(req.query.agentId),
+      limit: req.query.limit ? Number(req.query.limit) : undefined,
+    });
+    res.json(report);
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'recommendation error' });
   }
 });
