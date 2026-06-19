@@ -89,3 +89,26 @@ the agency wallet has credits or an AI-Employee plan (Voice AI bills per minute)
 the List API returns them, so a real *inbound* call may be required for an API-visible record;
 fresh sandboxes may lack wallet credits; Voice AI outbound is US-only and needs KYC. Fixtures
 are real sandbox self-test data and may contain PII — scrub before sharing externally.
+
+## F. Persistence & ingestion (ADR-0008)
+
+Scored calls are persisted to **Postgres** (`AnalysisRepository`). The scoring engine uses the
+**Claude Agent SDK** (auth via `CLAUDE_CODE_OAUTH_TOKEN` from `claude setup-token` — no bare key).
+
+1. **Postgres** — any local instance works. Create the DB and set the URL in `.env`:
+   ```bash
+   createdb voiceai_observability     # or: psql -d postgres -c 'CREATE DATABASE voiceai_observability'
+   # .env:
+   DATABASE_URL=postgresql://<user>@localhost:5432/voiceai_observability
+   CLAUDE_CODE_OAUTH_TOKEN=sk-ant-oat-...   # from `claude setup-token`
+   ```
+   Tables auto-create on server boot (`initSchema`) and on first ingest — no migration step.
+2. **Ingest** (poll the sandbox, score + persist any new calls):
+   ```bash
+   cd server && npx tsx scripts/ingest.mts
+   ```
+3. **Read** via the API: `GET /api/analyses?locationId=<id>`, `/api/analyses/:callId`,
+   `/api/kpis/averages?locationId=<id>`.
+4. **Webhook (near-real-time)** — point GHL's *Transcript Generated* trigger at
+   `POST https://voai.deepesh-engg.in/webhooks/ghl/voice-ai`; it scores + persists that call.
+   (Payload-shape wiring still pending — A-006.)

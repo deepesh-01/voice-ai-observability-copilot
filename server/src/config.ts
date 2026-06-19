@@ -58,6 +58,8 @@ export const config = {
    * authenticates with this OAuth token (from `claude setup-token`) — not a bare API key.
    */
   claudeOAuthToken: process.env.CLAUDE_CODE_OAUTH_TOKEN ?? '',
+  /** Postgres connection (ADR-0002 rev). Empty → persistence is unavailable. */
+  databaseUrl: process.env.DATABASE_URL ?? '',
 } as const;
 
 /** The OAuth redirect URI registered in the Marketplace app must match this exactly. */

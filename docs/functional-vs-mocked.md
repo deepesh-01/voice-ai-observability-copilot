@@ -17,6 +17,9 @@
 | KPI scoring & deviation detection (LLM) | R2.3 | 🟢 | **Live, run end-to-end (S-012).** `analysis/score.ts` scores transcript+goal → KPI scores + deviations + "Use Actions" via the **Claude Agent SDK** (`claude-opus-4-8`, structured output), authed by `CLAUDE_CODE_OAUTH_TOKEN` (no bare API key). Pure logic unit-tested (7 tests); **closed the loop on the real 123s booking call** (overall 89/100, caught first-name-only + dropped-email gaps). Run: `scripts/score-fixture.mts`. |
 | Unified dashboard | R2.4, E1 | 🟡 | Vue 3 shell built + embeddable; health/installs wired. Full agent/call/issue views pending. |
 | Recommendations engine | R2.5 | ⬜ | Claude-based synthesis over call history. |
+| Persistence (analyses + KPIs) | R2.3, R2.4 | 🟢 | **Live, real Postgres (S-012, ADR-0008).** `AnalysisRepository` (swappable interface) on Postgres+JSONB: `call_analysis` (JSONB fidelity + typed/indexed dims) + `call_kpi` (flat rows for `GROUP BY` analytics). Real integration tests against local Postgres. 4 real calls persisted; KPI averages query verified. |
+| Ingestion pipeline | R2.1 | 🟢/🟡 | **Poll: live (S-012)** — `scripts/ingest.mts` / `pollIngest.ts` scored + persisted 4 real sandbox calls end-to-end. **Webhook: 🟡** — `POST /webhooks/ghl/voice-ai` endpoint built, but GHL "Transcript Generated" trigger wiring + payload shape pending (A-006). |
+| Dashboard API (read) | R2.4 | 🟢 | **Live (S-012).** `GET /api/analyses`, `/api/analyses/:callId`, `/api/kpis/averages` serve persisted data; verified returning real scored calls. |
 | "Use Actions" segment flagging | R2.6 | 🟡 | Modeled in the scorer output (`UseAction` spans of turns to review) — not yet surfaced in the UI or tied to `extractedData`/`executedCallActions` (A-005). |
 
 ## Rule

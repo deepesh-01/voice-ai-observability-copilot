@@ -58,6 +58,11 @@ later ADR once we measure.)
 → **MongoDB** — flexible transcript/KPI documents, trivial local setup, aligns with the
 target platform's ecosystem. Revisit if dashboard aggregations get heavy.
 
+> **⚠️ SUPERSEDED (S-012 — ADR-0008):** storage moved to **Postgres + JSONB**. The
+> "revisit if dashboard aggregations get heavy" caveat triggered: the dashboard's core reads
+> are KPI aggregations (avg per agent, trends), which SQL does better, while JSONB keeps
+> document flexibility for raw call logs. Postgres was also already running locally. See ADR-0008.
+
 ### HighLevel integration surface (R1.2)
 
 | Option | Pros | Cons |

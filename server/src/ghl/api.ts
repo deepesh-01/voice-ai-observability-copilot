@@ -54,6 +54,25 @@ export async function listCallLogs(
   return data;
 }
 
+/**
+ * Fetch one agent's configured prompt/goal — what we score a call's adherence against.
+ * The Voice AI agent endpoints use the newer `v3` API version (S-012).
+ */
+export async function getAgentPrompt(agentId: string, locationId: string): Promise<string | undefined> {
+  const token = await getValidAccessToken(locationId);
+  const { data } = await axios.get<{ agents?: { id?: string; _id?: string; agentPrompt?: string }[] }>(
+    `${GHL.apiBase}/voice-ai/agents`,
+    { headers: { Authorization: `Bearer ${token}`, Version: 'v3' }, params: { locationId } },
+  );
+  const agent = (data.agents ?? []).find((a) => (a.id ?? a._id) === agentId);
+  return agent?.agentPrompt;
+}
+
+/** Best-effort extraction of a call id from a List Call Logs item (field name varies). */
+export function callIdOf(call: Record<string, unknown>): string | undefined {
+  return (call.callId ?? call.id ?? call._id ?? call.callLogId) as string | undefined;
+}
+
 export interface ConnectionStatus {
   /** Token is live (HighLevel still accepts it). */
   connected: boolean;

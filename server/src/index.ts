@@ -5,6 +5,8 @@ import { existsSync } from 'node:fs';
 import { config } from './config.js';
 import { oauthRouter } from './routes/oauth.routes.js';
 import { apiRouter } from './routes/api.routes.js';
+import { webhookRouter } from './routes/webhook.routes.js';
+import { analysisRepo } from './store/analysisRepository.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -30,6 +32,7 @@ app.get('/health', (_req, res) => {
 
 app.use('/oauth', oauthRouter);
 app.use('/api', apiRouter);
+app.use('/webhooks', webhookRouter);
 
 // Serve the built Vue dashboard (web/dist) when present; otherwise a setup placeholder.
 const webDist = resolve(here, '../../web/dist');
@@ -52,4 +55,13 @@ app.listen(config.port, () => {
   console.log(`[server] listening on http://localhost:${config.port}`);
   console.log(`[server] public base URL: ${config.publicBaseUrl}`);
   console.log(`[server] OAuth redirect URI: ${config.publicBaseUrl}/oauth/callback`);
+  // Best-effort: ensure persistence tables exist when a DB is configured.
+  if (config.databaseUrl) {
+    analysisRepo
+      .init()
+      .then(() => console.log('[server] persistence ready (Postgres)'))
+      .catch((err) => console.warn('[server] persistence init failed:', err.message));
+  } else {
+    console.warn('[server] DATABASE_URL unset — persistence disabled');
+  }
 });

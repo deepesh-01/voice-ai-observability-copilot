@@ -1,8 +1,11 @@
 import { Router } from 'express';
 import { listInstalls } from '../store/tokenStore.js';
 import { listCallLogs, getCallLog, checkConnection } from '../ghl/api.js';
+import { analysisRepo } from '../store/analysisRepository.js';
 
 export const apiRouter = Router();
+
+const str = (v: unknown): string | undefined => (typeof v === 'string' && v ? v : undefined);
 
 /** Which sub-accounts/agencies have installed the app (drives the dashboard's account picker). */
 apiRouter.get('/installs', async (_req, res) => {
@@ -40,5 +43,52 @@ apiRouter.get('/calls/:callId', async (req, res) => {
     res.json(await getCallLog(req.params.callId));
   } catch (err) {
     res.status(502).json({ error: err instanceof Error ? err.message : 'upstream error' });
+  }
+});
+
+/** Persisted, scored analyses for a location (dashboard list view). */
+apiRouter.get('/analyses', async (req, res) => {
+  const locationId = str(req.query.locationId);
+  if (!locationId) {
+    res.status(400).json({ error: 'locationId query param is required.' });
+    return;
+  }
+  try {
+    const items = await analysisRepo.list({
+      locationId,
+      agentId: str(req.query.agentId),
+      limit: req.query.limit ? Number(req.query.limit) : undefined,
+    });
+    res.json({ analyses: items });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'storage error' });
+  }
+});
+
+/** One persisted analysis (full CallAnalysis + raw call). */
+apiRouter.get('/analyses/:callId', async (req, res) => {
+  try {
+    const stored = await analysisRepo.get(req.params.callId);
+    if (!stored) {
+      res.status(404).json({ error: 'No analysis stored for that call. Ingest it first.' });
+      return;
+    }
+    res.json(stored);
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'storage error' });
+  }
+});
+
+/** Average score per (agent, KPI) — drives the dashboard's agent/KPI trends. */
+apiRouter.get('/kpis/averages', async (req, res) => {
+  const locationId = str(req.query.locationId);
+  if (!locationId) {
+    res.status(400).json({ error: 'locationId query param is required.' });
+    return;
+  }
+  try {
+    res.json({ averages: await analysisRepo.kpiAverages({ locationId, agentId: str(req.query.agentId) }) });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'storage error' });
   }
 });
