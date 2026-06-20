@@ -114,6 +114,14 @@ code { background: #eef0f3; padding: 1px 5px; border-radius: 4px; font-size: 12.
 }
 @keyframes kpi-grow { from { transform: scaleX(0); } }
 
+/* View-level entrance — plays once when a drill-down view (overview/agent/call) mounts.
+ * Navigation is occasional (not a 100x/day action), so a short slide-up is appropriate;
+ * it makes the agent → call hierarchy feel spatial instead of a hard cut. */
+.view-enter { animation: view-enter 240ms var(--ease-out) both; }
+@keyframes view-enter {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
 /* Staggered entrance for list items (cards, recommendations). Decorative — used on
  * occasional views, never on rapidly-repeated actions. */
 .stagger-item { animation: enter-up 280ms var(--ease-out) both; }
@@ -146,6 +154,26 @@ code { background: #eef0f3; padding: 1px 5px; border-radius: 4px; font-size: 12.
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* Full-viewport centered loader — used by EVERY initial-load phase (the boot
+ * spinner in index.html, "Connecting…", and "Loading agents…") so the spinner is
+ * always the same size and at the exact same viewport-centered spot, whether or not
+ * the header has rendered. It covers the page with the app background, so the whole
+ * load reads as one continuous spinner with zero layout shift. */
+.page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 14px;
+}
+.page-loader p { margin: 0; }
+
 /* Empty / error state blocks */
 .state-block {
   display: flex;
@@ -176,5 +204,6 @@ code { background: #eef0f3; padding: 1px 5px; border-radius: 4px; font-size: 12.
 @media (prefers-reduced-motion: reduce) {
   .stagger-item { animation: none; }
   .kpi-bar-fill { animation: none; }
+  .view-enter { animation: none; }
   .btn:active:not(:disabled) { transform: none; }
 }

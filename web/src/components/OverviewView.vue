@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
-import { deriveAgents, fetchAnalyses, fetchKpiAverages, scoreClass, scoreColor, shortId, UNASSIGNED_AGENT, type AgentSummary } from '../api';
+import { computed, onMounted, ref, watch } from 'vue';
+import { deriveAgents, fetchAnalyses, fetchKpiAverages, fetchLeads, scoreClass, scoreColor, shortId, UNASSIGNED_AGENT, type AgentSummary, type CallLead } from '../api';
 import { ensureAgents, displayName } from '../agents';
 import KpiBar from './KpiBar.vue';
 
 const props = defineProps<{
   locationId: string;
+  /** Bumped by the header Refresh button → re-fetch in place (non-destructive). */
+  refreshSignal?: number;
 }>();
 
 const emit = defineEmits<{
@@ -15,33 +17,70 @@ const emit = defineEmits<{
 const loading = ref(true);
 const error = ref<string | null>(null);
 const agents = ref<AgentSummary[]>([]);
+const leads = ref<CallLead[]>([]);
 const totalCalls = ref(0);
 
-async function load() {
-  loading.value = true;
-  error.value = null;
+// `silent` (the Refresh path) keeps the current content visible and just swaps in
+// fresh data when it arrives — no loader flash, and stale data is kept on failure.
+async function load(silent = false) {
+  if (!silent) {
+    loading.value = true;
+    error.value = null;
+  }
   try {
-    const [calls, kpiAvgs] = await Promise.all([
+    const [calls, kpiAvgs, leadData] = await Promise.all([
       fetchAnalyses({ locationId: props.locationId, limit: 500 }),
       fetchKpiAverages({ locationId: props.locationId }),
+      fetchLeads({ locationId: props.locationId, limit: 500 }).catch(() => []),
       ensureAgents(props.locationId),
     ]);
     totalCalls.value = calls.length;
     agents.value = deriveAgents(calls, kpiAvgs);
+    leads.value = leadData;
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Failed to load agents.';
+    if (!silent) error.value = e instanceof Error ? e.message : 'Failed to load agents.';
   } finally {
-    loading.value = false;
+    if (!silent) loading.value = false;
   }
 }
 
-onMounted(load);
+onMounted(() => load());
+watch(() => props.refreshSignal, () => load(true));
 
 const overallAvg = computed(() => {
   if (!agents.value.length) return null;
   const sum = agents.value.reduce((acc, a) => acc + a.avgScore * a.callCount, 0);
   return Math.round(sum / totalCalls.value);
 });
+
+/** Per-agent signal tallies, keyed by agentId (undefined agent → UNASSIGNED bucket). */
+const signalsByAgent = computed((): Map<string, { missed: number; human: number }> => {
+  const map = new Map<string, { missed: number; human: number }>();
+  for (const l of leads.value) {
+    const id = l.agentId ?? UNASSIGNED_AGENT;
+    const entry = map.get(id) ?? { missed: 0, human: 0 };
+    if (l.missedOpportunity) entry.missed += 1;
+    if (l.humanActionNeeded) entry.human += 1;
+    map.set(id, entry);
+  }
+  return map;
+});
+
+/** Location-wide signal totals for the summary strip. */
+const totalSignals = computed(() => {
+  let missed = 0;
+  let human = 0;
+  for (const s of signalsByAgent.value.values()) {
+    missed += s.missed;
+    human += s.human;
+  }
+  return { missed, human };
+});
+
+/** Signal counts for one agent, defaulting to zeros (template helper). */
+function agentSignals(agentId: string): { missed: number; human: number } {
+  return signalsByAgent.value.get(agentId) ?? { missed: 0, human: 0 };
+}
 </script>
 
 <template>
@@ -62,10 +101,23 @@ const overallAvg = computed(() => {
         <span class="summary-value" :style="{ color: scoreColor(overallAvg) }">{{ overallAvg }}</span>
         <span class="summary-label">Avg overall score</span>
       </div>
+      <template v-if="leads.length">
+        <div class="summary-sep"></div>
+        <div class="summary-item" title="Calls flagged as a missed opportunity (R2.3)">
+          <span class="summary-value" style="color: #b45309">{{ totalSignals.missed }}</span>
+          <span class="summary-label">Missed</span>
+        </div>
+        <div class="summary-sep"></div>
+        <div class="summary-item" title="Calls needing human action (R2.6)">
+          <span class="summary-value" style="color: #1d4ed8">{{ totalSignals.human }}</span>
+          <span class="summary-label">Need human</span>
+        </div>
+      </template>
     </div>
 
-    <!-- Loading -->
-    <div v-if="loading" class="state-block">
+    <!-- Loading — shared full-viewport loader: same size + position as the boot
+         spinner and the App "Connecting…" loader, so the handoff has no shift. -->
+    <div v-if="loading" class="page-loader">
       <span class="spinner spinner-lg"></span>
       <p>Loading agents…</p>
     </div>
@@ -75,7 +127,7 @@ const overallAvg = computed(() => {
       <div class="state-block-icon">!</div>
       <h3>Could not load agents</h3>
       <p>{{ error }}</p>
-      <button class="btn" @click="load">Retry</button>
+      <button class="btn" @click="load()">Retry</button>
     </div>
 
     <!-- Empty -->
@@ -119,6 +171,19 @@ const overallAvg = computed(() => {
         </div>
         <p v-else class="no-kpi-text">KPI data not yet available</p>
 
+        <!-- Per-agent observability signal counts -->
+        <div v-if="leads.length" class="agent-signal-row">
+          <template v-if="agentSignals(agent.agentId).missed || agentSignals(agent.agentId).human">
+            <span v-if="agentSignals(agent.agentId).missed" class="agent-sig agent-sig--missed">
+              ⚑ {{ agentSignals(agent.agentId).missed }} missed
+            </span>
+            <span v-if="agentSignals(agent.agentId).human" class="agent-sig agent-sig--human">
+              ⚑ {{ agentSignals(agent.agentId).human }} need human
+            </span>
+          </template>
+          <span v-else class="agent-sig agent-sig--clear">✓ No signals flagged</span>
+        </div>
+
         <div class="agent-card-footer">
           <span class="view-detail">View detail →</span>
         </div>
@@ -133,6 +198,8 @@ const overallAvg = computed(() => {
 .summary-strip {
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 0;
   background: var(--card);
   border: 1px solid var(--border);
@@ -168,10 +235,12 @@ const overallAvg = computed(() => {
   background: var(--border);
 }
 
-/* Agent grid */
+/* Agent grid — auto-fit + centered so a small number of cards sit centered
+ * rather than lonely on the left; cards cap at 420px so they don't stretch wide. */
 .agent-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 420px));
+  justify-content: center;
   gap: 16px;
 }
 
@@ -262,6 +331,15 @@ const overallAvg = computed(() => {
   color: var(--muted);
   margin: 0;
 }
+
+/* Per-agent signal row */
+.agent-signal-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.agent-sig {
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+}
+.agent-sig--missed { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+.agent-sig--human  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.agent-sig--clear  { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
 
 .agent-card-footer {
   border-top: 1px solid var(--border);

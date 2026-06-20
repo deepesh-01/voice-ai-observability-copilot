@@ -74,6 +74,18 @@ test.describe('drill-down + recommendations (R2.5/R2.6 · UX-002/003)', () => {
     await expect(page.locator('.recs-refresh')).toBeVisible();
   });
 
+  test('Refresh is non-destructive — stays on the current view', async ({ page }) => {
+    await mockApi(page);
+    await page.goto('/');
+    await page.locator('.agent-card').first().click();
+    await page.locator('.call-row').first().click();
+    await expect(page.getByRole('heading', { name: 'Transcript' })).toBeVisible();
+    // Hitting Refresh deep in the call view must NOT bounce back to the overview.
+    await page.getByRole('button', { name: /Refresh/ }).click();
+    await expect(page.getByRole('heading', { name: 'Transcript' })).toBeVisible();
+    await expect(page.getByText('Calls analyzed')).toHaveCount(0);
+  });
+
   test('breadcrumbs navigate back up the stack', async ({ page }) => {
     await mockApi(page);
     await page.goto('/');
@@ -92,6 +104,80 @@ test.describe('drill-down + recommendations (R2.5/R2.6 · UX-002/003)', () => {
     await page.locator('.call-row').first().click();
     await page.getByRole('button', { name: /Turn 5/ }).click();
     await expect(page.locator('#turn-5')).toHaveClass(/turn--highlighted/);
+  });
+});
+
+test.describe('connections (icon trigger → modal)', () => {
+  test('connections live behind a corner icon and open a modal with details', async ({ page }) => {
+    await mockApi(page);
+    await page.goto('/');
+    // The full-width bar is gone — connections are a compact header icon now.
+    await expect(page.locator('.conn-trigger')).toBeVisible();
+    await expect(page.locator('.modal')).toHaveCount(0);
+    // Opening reveals the details in a centered modal
+    await page.locator('.conn-trigger').click();
+    await expect(page.getByRole('dialog', { name: 'Connections & Settings' })).toBeVisible();
+    await expect(page.getByText('Backend connected')).toBeVisible();
+    // Esc closes it
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.modal')).toHaveCount(0);
+  });
+});
+
+test.describe('observability signals + leads (R2.3/R2.6 · task #12)', () => {
+  test('overview surfaces per-agent + location-wide signal counts', async ({ page }) => {
+    await mockApi(page);
+    await page.goto('/');
+    // Location-wide tallies in the summary strip (two distinct stats)
+    await expect(page.locator('.summary-strip').getByText('Missed', { exact: true })).toBeVisible();
+    await expect(page.locator('.summary-strip').getByText('Need human', { exact: true })).toBeVisible();
+    // Per-agent card: 2 missed (aaa+bbb), 1 needs human (bbb)
+    await expect(page.locator('.agent-sig--missed')).toContainText('2 missed');
+    await expect(page.locator('.agent-sig--human')).toContainText('1 need human');
+  });
+
+  test('agent view shows signal summary, per-row badges, and filters the call list', async ({ page }) => {
+    await mockApi(page);
+    await page.goto('/');
+    await page.locator('.agent-card').first().click();
+
+    // Header signal summary
+    await expect(page.getByText(/2 missed opportunities/)).toBeVisible();
+    await expect(page.getByText(/1 need.* human action/)).toBeVisible();
+
+    // All three calls visible; two carry an MO badge, one an HA badge
+    await expect(page.locator('.call-row')).toHaveCount(3);
+    await expect(page.locator('.row-sig--missed')).toHaveCount(2);
+    await expect(page.locator('.row-sig--human')).toHaveCount(1);
+
+    // Filter to "Needs human" → only the one flagged call remains
+    await page.getByRole('button', { name: /Needs human/ }).click();
+    await expect(page.locator('.call-row')).toHaveCount(1);
+    await expect(page.locator('.call-row .row-sig--human')).toBeVisible();
+  });
+
+  test('call view renders the Lead & Outcome panel with provenance + native drawer', async ({ page }) => {
+    await mockApi(page);
+    await page.goto('/');
+    await page.locator('.agent-card').first().click();
+    await page.locator('.call-row').first().click();
+
+    // Panel header + GHL-confirmed provenance badge
+    await expect(page.getByRole('heading', { name: /Lead & Outcome/ })).toBeVisible();
+    await expect(page.locator('.source-badge--ghl')).toHaveText('GHL-confirmed');
+
+    // Booking status + confirmed + the missed-opportunity signal with its reason
+    await expect(page.locator('.booking-pill')).toHaveText('Booked');
+    await expect(page.getByText('✓ Confirmed')).toBeVisible();
+    await expect(page.getByText('Missed opportunity')).toBeVisible();
+    await expect(page.getByText(/never offered to add it/)).toBeVisible();
+
+    // Native extractedData drawer is collapsed, then expands to show raw fields
+    const toggle = page.getByRole('button', { name: /Native extractedData/ });
+    await expect(page.locator('.native-grid')).toHaveCount(0);
+    await toggle.click();
+    await expect(page.locator('.native-grid')).toBeVisible();
+    await expect(page.locator('.native-grid')).toContainText('Last Name');
   });
 });
 
@@ -131,6 +217,28 @@ test.describe('craft layer (UX-007) — validated via computed styles, not a rec
       .first()
       .evaluate((el) => getComputedStyle(el).animationName);
     expect(name).toBe('enter-up');
+  });
+
+  test('drilling into a view plays the view-enter transition', async ({ page }) => {
+    await mockApi(page);
+    await page.goto('/');
+    await page.locator('.agent-card').first().click();
+    // The AgentView root carries .view-enter → a spatial slide-up on navigation
+    const name = await page
+      .locator('.agent-view')
+      .evaluate((el) => getComputedStyle(el).animationName);
+    expect(name).toBe('view-enter');
+  });
+
+  test('signal filter toggles give press feedback (transform transition)', async ({ page }) => {
+    await mockApi(page);
+    await page.goto('/');
+    await page.locator('.agent-card').first().click();
+    const prop = await page
+      .locator('.filter-toggle')
+      .first()
+      .evaluate((el) => getComputedStyle(el).transitionProperty);
+    expect(prop).toContain('transform');
   });
 
   test('primary buttons transition transform for press feedback', async ({ page }) => {

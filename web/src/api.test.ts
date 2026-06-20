@@ -5,6 +5,11 @@ import {
   UNASSIGNED_AGENT,
   agentLabel,
   formatDuration,
+  bookingStatusLabel,
+  bookingStatusClass,
+  sourceLabel,
+  countSignals,
+  type CallLead,
   type CallSummary,
   type KpiAverage,
 } from './api';
@@ -106,5 +111,53 @@ describe('formatDuration', () => {
     expect(formatDuration(125)).toBe('2:05');
     expect(formatDuration(0)).toBe('0:00');
     expect(formatDuration(undefined)).toBe('—');
+  });
+});
+
+describe('lead presentation helpers', () => {
+  it('labels booking statuses readably', () => {
+    expect(bookingStatusLabel('booked')).toBe('Booked');
+    expect(bookingStatusLabel('not_booked')).toBe('Not booked');
+    expect(bookingStatusLabel('unknown')).toBe('Unknown');
+  });
+
+  it('maps booking status to a color class bucket', () => {
+    expect(bookingStatusClass('booked')).toBe('booked');
+    expect(bookingStatusClass('not_booked')).toBe('negative');
+    expect(bookingStatusClass('cancelled')).toBe('negative');
+    expect(bookingStatusClass('reschedule')).toBe('neutral');
+    expect(bookingStatusClass('unknown')).toBe('neutral');
+  });
+
+  it('renders provenance as the user-facing source label', () => {
+    expect(sourceLabel('ghl')).toBe('GHL-confirmed');
+    expect(sourceLabel('llm')).toBe('Inferred');
+  });
+});
+
+describe('countSignals', () => {
+  const lead = (over: Partial<CallLead>): CallLead => ({
+    callId: 'c',
+    locationId: 'loc',
+    bookingStatus: 'unknown',
+    confirmed: false,
+    missedOpportunity: false,
+    humanActionNeeded: false,
+    source: 'llm',
+    ...over,
+  });
+
+  it('counts each signal independently across a set of leads', () => {
+    const leads = [
+      lead({ missedOpportunity: true, humanActionNeeded: true }),
+      lead({ missedOpportunity: true }),
+      lead({ humanActionNeeded: true }),
+      lead({}),
+    ];
+    expect(countSignals(leads)).toEqual({ missed: 2, human: 2 });
+  });
+
+  it('returns zeros for an empty set', () => {
+    expect(countSignals([])).toEqual({ missed: 0, human: 0 });
   });
 });

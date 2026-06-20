@@ -110,6 +110,67 @@ const RECOMMENDATIONS = {
   ],
 };
 
+/**
+ * Per-call leads + the two observability signals (R2.3 missed opportunity, R2.6 human
+ * action needed). Mirrors the real /api/leads shape (CallLead). Mix of `ghl` (native
+ * extractedData ground-truth) and `llm` (inferred) provenance so the source badge,
+ * native drawer, and signal counts all have data to render.
+ */
+const LEADS = [
+  {
+    callId: CALL_ID,
+    locationId: LOC,
+    agentId: AGENT,
+    callerName: 'Dipesh',
+    phone: '+17987215728',
+    treatment: 'Teeth cleaning',
+    bookingStatus: 'booked',
+    bookedAt: '2026-06-22T11:00:00.000Z',
+    confirmed: true,
+    missedOpportunity: true,
+    missedOpportunityReason: 'Caller asked about whitening; agent never offered to add it to the booking.',
+    humanActionNeeded: false,
+    source: 'ghl',
+    native: {
+      name: 'Dipesh',
+      Phone: '+17987215728',
+      'Last Name': 'Rathore',
+      'Treatment Interest': 'Teeth cleaning',
+      bookingInterest: 'Booked',
+      DateTimeOfBooking: 'Jun 22 2026 11:00',
+    },
+  },
+  {
+    callId: 'call-bbb-0002',
+    locationId: LOC,
+    agentId: AGENT,
+    callerName: 'Priya',
+    problem: 'Asked about implant pricing',
+    treatment: 'Dental implant',
+    bookingStatus: 'not_booked',
+    confirmed: false,
+    missedOpportunity: true,
+    missedOpportunityReason: 'Caller showed intent on implants but the agent ended the call without booking or capturing contact info.',
+    humanActionNeeded: true,
+    humanActionReason: 'Out-of-scope implant request — needs a human to follow up with a referral.',
+    source: 'llm',
+    native: null,
+  },
+  {
+    callId: 'call-ccc-0003',
+    locationId: LOC,
+    agentId: AGENT,
+    bookingStatus: 'unknown',
+    confirmed: false,
+    missedOpportunity: false,
+    humanActionNeeded: false,
+    source: 'llm',
+    native: null,
+  },
+];
+
+const LEAD_BY_ID = new Map(LEADS.map((l) => [l.callId, l]));
+
 export interface MockOptions {
   /** Return an empty analyses list (drives the "no calls yet" empty state). */
   empty?: boolean;
@@ -145,6 +206,14 @@ export async function mockApi(page: Page, opts: MockOptions = {}): Promise<void>
     }
     if (/\/api\/analyses\/.+/.test(p)) return json(route, STORED_CALL);
     if (p.endsWith('/api/analyses')) return json(route, { analyses: opts.empty ? [] : ANALYSES });
+    // Leads: single-call lead (drives the call view's Lead & Outcome panel) and the
+    // list (drives agent/overview signal counts + filters).
+    const leadMatch = /\/api\/leads\/(.+)$/.exec(p);
+    if (leadMatch) {
+      const lead = LEAD_BY_ID.get(decodeURIComponent(leadMatch[1]));
+      return lead ? json(route, lead) : json(route, { error: 'no lead' }, 404);
+    }
+    if (p.endsWith('/api/leads')) return json(route, { leads: opts.empty ? [] : LEADS });
     if (p.endsWith('/api/recommendations')) {
       if (opts.recsDelayMs) await new Promise((r) => setTimeout(r, opts.recsDelayMs));
       return json(route, RECOMMENDATIONS);

@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import {
+  bookingStatusClass,
+  bookingStatusLabel,
   fetchCall,
+  fetchLead,
   formatDuration,
   formatTime,
   kpiLabel,
   parseTranscript,
   scoreClass,
   scoreColor,
+  sourceLabel,
+  type CallLead,
   type Deviation,
   type StoredCall,
   type Turn,
@@ -19,6 +24,8 @@ const props = defineProps<{
   callId: string;
   /** Back context label for the back button */
   backLabel?: string;
+  /** Bumped by the header Refresh button → re-fetch in place (non-destructive). */
+  refreshSignal?: number;
 }>();
 
 const emit = defineEmits<{
@@ -30,28 +37,66 @@ const emit = defineEmits<{
 const loading = ref(true);
 const error = ref<string | null>(null);
 const storedCall = ref<StoredCall | null>(null);
+const lead = ref<CallLead | null>(null);
+const showNative = ref(false);
 const highlightedTurn = ref<number | null>(null);
 
 // ── Load ──────────────────────────────────────────────────────────────────────
 
-async function load() {
-  loading.value = true;
-  error.value = null;
+// `silent` (the Refresh path) keeps the current call visible and swaps in fresh
+// data when it arrives — no loader flash, stale data kept on failure.
+async function load(silent = false) {
+  if (!silent) {
+    loading.value = true;
+    error.value = null;
+  }
   try {
-    storedCall.value = await fetchCall(props.callId);
-    if (storedCall.value?.locationId) await ensureAgents(storedCall.value.locationId);
+    // The lead is supplementary — a missing/failed lead must not blank the call view.
+    const [call, leadResult] = await Promise.all([
+      fetchCall(props.callId),
+      fetchLead(props.callId).catch(() => null),
+    ]);
+    storedCall.value = call;
+    lead.value = leadResult;
+    if (call?.locationId) await ensureAgents(call.locationId);
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Failed to load call.';
+    if (!silent) error.value = e instanceof Error ? e.message : 'Failed to load call.';
   } finally {
-    loading.value = false;
+    if (!silent) loading.value = false;
   }
 }
 
-onMounted(load);
+onMounted(() => load());
+watch(() => props.refreshSignal, () => load(true));
 
 // ── Derived ───────────────────────────────────────────────────────────────────
 
 const analysis = computed(() => storedCall.value?.analysis ?? null);
+
+// ── Lead facts + signals ──────────────────────────────────────────────────────
+
+/** Identity/booking facts to render as a labelled list (skips empties). */
+const leadFacts = computed((): { label: string; value: string }[] => {
+  const l = lead.value;
+  if (!l) return [];
+  const rows: { label: string; value: string }[] = [];
+  if (l.callerName) rows.push({ label: 'Name', value: l.callerName });
+  if (l.phone) rows.push({ label: 'Phone', value: l.phone });
+  if (l.email) rows.push({ label: 'Email', value: l.email });
+  if (l.problem) rows.push({ label: 'Reason', value: l.problem });
+  if (l.treatment) rows.push({ label: 'Treatment', value: l.treatment });
+  if (l.bookedAt) rows.push({ label: 'Booked for', value: formatTime(l.bookedAt) });
+  return rows;
+});
+
+/** Raw native extractedData as key/value pairs for the provenance drawer. */
+const nativeEntries = computed((): { key: string; value: string }[] => {
+  const native = lead.value?.native;
+  if (!native) return [];
+  return Object.entries(native)
+    .filter(([, v]) => v != null && v !== '')
+    .map(([key, v]) => ({ key, value: String(v) }));
+});
 
 const turns = computed((): Turn[] => {
   const raw = storedCall.value?.rawCall;
@@ -159,7 +204,7 @@ function devKpiLabel(dev: Deviation): string {
       <div class="state-block-icon">!</div>
       <h3>Could not load call</h3>
       <p>{{ error }}</p>
-      <button class="btn" @click="load">Retry</button>
+      <button class="btn" @click="load()">Retry</button>
     </div>
 
     <template v-else-if="storedCall && analysis">
@@ -185,8 +230,76 @@ function devKpiLabel(dev: Deviation): string {
 
       <!-- Main content: two-column on wider screens -->
       <div class="call-body">
-        <!-- Left column: KPI scores + deviations -->
+        <!-- Left column: lead/outcome + KPI scores + deviations -->
         <div class="call-left">
+          <!-- Lead & Outcome: business result + the two observability signals -->
+          <div v-if="lead" class="card section lead-card">
+            <h3 class="section-title">
+              Lead &amp; Outcome
+              <span
+                class="source-badge"
+                :class="`source-badge--${lead.source}`"
+                :title="lead.source === 'ghl'
+                  ? 'Facts taken from the agent’s native extractedData (ground-truth).'
+                  : 'Facts inferred by the LLM from the transcript.'"
+              >{{ sourceLabel(lead.source) }}</span>
+            </h3>
+
+            <!-- Booking status -->
+            <div class="lead-status-row">
+              <span class="booking-pill" :class="`booking-pill--${bookingStatusClass(lead.bookingStatus)}`">
+                {{ bookingStatusLabel(lead.bookingStatus) }}
+              </span>
+              <span v-if="lead.confirmed" class="confirmed-chip" title="The agent confirmed the booking back to the caller.">✓ Confirmed</span>
+            </div>
+
+            <!-- Identity / treatment facts -->
+            <dl v-if="leadFacts.length" class="lead-facts">
+              <template v-for="fact in leadFacts" :key="fact.label">
+                <dt>{{ fact.label }}</dt>
+                <dd>{{ fact.value }}</dd>
+              </template>
+            </dl>
+            <p v-else class="no-data" style="padding: 4px 0;">No identity or treatment facts captured.</p>
+
+            <!-- Observability signals (only when flagged) -->
+            <div v-if="lead.missedOpportunity || lead.humanActionNeeded" class="signal-list">
+              <div v-if="lead.missedOpportunity" class="signal-item signal-item--missed">
+                <span class="signal-icon">⚑</span>
+                <div>
+                  <span class="signal-label">Missed opportunity</span>
+                  <span class="signal-tag">R2.3</span>
+                  <p v-if="lead.missedOpportunityReason" class="signal-reason">{{ lead.missedOpportunityReason }}</p>
+                </div>
+              </div>
+              <div v-if="lead.humanActionNeeded" class="signal-item signal-item--human">
+                <span class="signal-icon">⚑</span>
+                <div>
+                  <span class="signal-label">Needs human action</span>
+                  <span class="signal-tag">R2.6</span>
+                  <p v-if="lead.humanActionReason" class="signal-reason">{{ lead.humanActionReason }}</p>
+                </div>
+              </div>
+            </div>
+            <div v-else class="signal-clear">
+              <span class="signal-clear-icon">✓</span> No missed opportunity or human action needed.
+            </div>
+
+            <!-- Native extractedData drawer (GHL-confirmed provenance) -->
+            <div v-if="nativeEntries.length" class="native-drawer">
+              <button class="native-toggle" :aria-expanded="showNative" @click="showNative = !showNative">
+                <span class="native-caret" :class="{ 'native-caret--open': showNative }">▸</span>
+                Native extractedData ({{ nativeEntries.length }})
+              </button>
+              <dl v-if="showNative" class="native-grid">
+                <template v-for="entry in nativeEntries" :key="entry.key">
+                  <dt>{{ entry.key }}</dt>
+                  <dd>{{ entry.value }}</dd>
+                </template>
+              </dl>
+            </div>
+          </div>
+
           <!-- KPI scorecards -->
           <div class="card section">
             <h3 class="section-title">KPI Scores</h3>
@@ -429,8 +542,119 @@ function devKpiLabel(dev: Deviation): string {
   gap: 8px;
 }
 
+/* Lead & Outcome card */
+.lead-card .section-title { justify-content: space-between; }
+
+.source-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.source-badge--ghl { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+.source-badge--llm { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+.lead-status-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.booking-pill {
+  display: inline-flex; align-items: center;
+  font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 7px;
+}
+.booking-pill--booked   { background: #ecfdf5; color: #047857; }
+.booking-pill--negative { background: #fef2f2; color: #b91c1c; }
+.booking-pill--neutral  { background: #eef0f3; color: var(--muted); }
+.confirmed-chip { font-size: 11.5px; font-weight: 600; color: #047857; }
+
+.lead-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 12px;
+  margin: 0 0 14px;
+}
+.lead-facts dt {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted); padding-top: 1px;
+}
+.lead-facts dd { margin: 0; font-size: 13px; color: var(--text); word-break: break-word; }
+
+.signal-list { display: flex; flex-direction: column; gap: 8px; }
+.signal-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 9px 11px; border-radius: 8px; border-left-width: 3px; border-left-style: solid;
+  /* These are the call's key call-outs — a soft entrance draws the eye without shouting. */
+  animation: signal-in 260ms var(--ease-out) both;
+}
+.signal-item--human { animation-delay: 50ms; }
+@keyframes signal-in {
+  from { opacity: 0; transform: translateY(4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .signal-item { animation: none; }
+}
+.signal-item--missed { background: #fffbeb; border-left-color: #f59e0b; }
+.signal-item--human  { background: #eff6ff; border-left-color: var(--accent); }
+.signal-icon { font-size: 13px; line-height: 1.4; flex-shrink: 0; }
+.signal-item--missed .signal-icon { color: #d97706; }
+.signal-item--human .signal-icon { color: var(--accent); }
+.signal-label { font-size: 12.5px; font-weight: 700; color: var(--text); }
+.signal-tag {
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.04em; color: var(--muted);
+  background: rgba(0,0,0,0.05); border-radius: 4px; padding: 1px 5px; margin-left: 6px;
+  vertical-align: middle;
+}
+.signal-reason { margin: 3px 0 0; font-size: 12px; line-height: 1.5; color: var(--text); }
+
+.signal-clear {
+  font-size: 12.5px; color: #047857;
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 11px; background: #f0fdf4; border-radius: 8px;
+}
+.signal-clear-icon { font-weight: 800; }
+
+/* Native extractedData drawer */
+.native-drawer { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+.native-toggle {
+  background: none; border: none; cursor: pointer; font-family: inherit;
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  display: inline-flex; align-items: center; gap: 6px; padding: 0;
+  transition: color 120ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .native-toggle:hover { color: var(--text); }
+}
+.native-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.native-caret { display: inline-block; transition: transform 140ms var(--ease-out); font-size: 10px; }
+.native-caret--open { transform: rotate(90deg); }
+.native-grid {
+  display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 10px 0 0;
+  background: #f7f8fa; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px;
+  /* Reveal the raw fields as the drawer opens — content shouldn't pop in from nothing. */
+  animation: native-reveal 200ms var(--ease-out) both;
+}
+@keyframes native-reveal {
+  from { opacity: 0; transform: translateY(-4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .native-caret { transition: none; }
+  .native-grid { animation: none; }
+}
+.native-grid dt {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px; color: var(--muted); word-break: break-word;
+}
+.native-grid dd { margin: 0; font-size: 12px; color: var(--text); word-break: break-word; }
+
 /* KPI scorecards */
 .kpi-score-list { display: flex; flex-direction: column; gap: 14px; }
+/* Cascade the bar reveals top-down (mirrors AgentView's KPI profile) so the
+ * scorecards read as a sequence, not a simultaneous flash. */
+.kpi-score-list > .kpi-scorecard:nth-child(1) .kpi-bar-fill { animation-delay: 40ms; }
+.kpi-score-list > .kpi-scorecard:nth-child(2) .kpi-bar-fill { animation-delay: 90ms; }
+.kpi-score-list > .kpi-scorecard:nth-child(3) .kpi-bar-fill { animation-delay: 140ms; }
+.kpi-score-list > .kpi-scorecard:nth-child(4) .kpi-bar-fill { animation-delay: 190ms; }
+.kpi-score-list > .kpi-scorecard:nth-child(5) .kpi-bar-fill { animation-delay: 240ms; }
+.kpi-score-list > .kpi-scorecard:nth-child(6) .kpi-bar-fill { animation-delay: 290ms; }
 
 .kpi-scorecard { display: flex; flex-direction: column; gap: 5px; }
 

@@ -3,8 +3,10 @@ import { computed, onMounted, ref, watch } from 'vue';
 import {
   shortId,
   UNASSIGNED_AGENT,
+  countSignals,
   fetchAnalyses,
   fetchKpiAverages,
+  fetchLeads,
   fetchRecommendations,
   formatDuration,
   formatTime,
@@ -12,6 +14,7 @@ import {
   scoreClass,
   scoreColor,
   type AgentRecommendations,
+  type CallLead,
   type CallSummary,
   type KpiAverage,
 } from '../api';
@@ -21,6 +24,8 @@ import KpiBar from './KpiBar.vue';
 const props = defineProps<{
   locationId: string;
   agentId: string;
+  /** Bumped by the header Refresh button → re-fetch in place (non-destructive). */
+  refreshSignal?: number;
 }>();
 
 const emit = defineEmits<{
@@ -34,6 +39,11 @@ const loadingMain = ref(true);
 const errorMain = ref<string | null>(null);
 const calls = ref<CallSummary[]>([]);
 const kpiAverages = ref<KpiAverage[]>([]);
+const leads = ref<CallLead[]>([]);
+
+// Signal filters — toggle to narrow the call list to flagged calls.
+const filterMissed = ref(false);
+const filterHuman = ref(false);
 
 const loadingRecs = ref(false);
 const errorRecs = ref<string | null>(null);
@@ -42,22 +52,29 @@ const recsLoaded = ref(false);
 
 // ── Data loading ──────────────────────────────────────────────────────────────
 
-async function loadMain() {
-  loadingMain.value = true;
-  errorMain.value = null;
+// `silent` (the Refresh path) keeps the current content visible and swaps in fresh
+// data — no loader flash, stale data kept on failure. Recommendations are left as-is
+// (they have their own Refresh; re-synthesis is expensive).
+async function loadMain(silent = false) {
+  if (!silent) {
+    loadingMain.value = true;
+    errorMain.value = null;
+  }
   try {
-    const [callData, kpiData] = await Promise.all([
+    const [callData, kpiData, leadData] = await Promise.all([
       fetchAnalyses({ locationId: props.locationId, agentId: props.agentId, limit: 100 }),
       fetchKpiAverages({ locationId: props.locationId, agentId: props.agentId }),
+      fetchLeads({ locationId: props.locationId, agentId: props.agentId, limit: 200 }).catch(() => []),
       ensureAgents(props.locationId),
     ]);
     calls.value = callData;
+    leads.value = leadData;
     // Sort KPIs weakest-first for the profile
     kpiAverages.value = [...kpiData].sort((a, b) => a.avgScore - b.avgScore);
   } catch (e) {
-    errorMain.value = e instanceof Error ? e.message : 'Failed to load agent data.';
+    if (!silent) errorMain.value = e instanceof Error ? e.message : 'Failed to load agent data.';
   } finally {
-    loadingMain.value = false;
+    if (!silent) loadingMain.value = false;
   }
 }
 
@@ -89,9 +106,14 @@ onMounted(() => {
 watch(() => [props.locationId, props.agentId], () => {
   recsLoaded.value = false;
   recommendations.value = null;
+  filterMissed.value = false;
+  filterHuman.value = false;
   loadMain();
   loadRecommendations();
 });
+
+// Refresh: reload the main data silently in place; keep filters + recommendations.
+watch(() => props.refreshSignal, () => loadMain(true));
 
 // ── Computed ──────────────────────────────────────────────────────────────────
 
@@ -101,6 +123,28 @@ const avgScore = computed(() => {
 });
 
 const weakestKpi = computed(() => kpiAverages.value[0] ?? null);
+
+// ── Observability signals ─────────────────────────────────────────────────────
+
+const leadByCall = computed((): Map<string, CallLead> => {
+  const map = new Map<string, CallLead>();
+  for (const l of leads.value) map.set(l.callId, l);
+  return map;
+});
+
+const signalCounts = computed(() => countSignals(leads.value));
+
+/** Calls narrowed by the active signal filters (both filters = AND). */
+const filteredCalls = computed((): CallSummary[] => {
+  if (!filterMissed.value && !filterHuman.value) return calls.value;
+  return calls.value.filter((c) => {
+    const lead = leadByCall.value.get(c.callId);
+    if (!lead) return false;
+    if (filterMissed.value && !lead.missedOpportunity) return false;
+    if (filterHuman.value && !lead.humanActionNeeded) return false;
+    return true;
+  });
+});
 
 // Kind label helpers
 const kindLabels: Record<string, string> = {
@@ -137,6 +181,14 @@ function kindLabel(kind: string): string {
       <p v-if="weakestKpi" class="agent-header-alert">
         Weakest KPI: <strong>{{ kpiLabel(weakestKpi.kpiKey) }}</strong> at {{ weakestKpi.avgScore }}/100 across {{ weakestKpi.calls }} call{{ weakestKpi.calls === 1 ? '' : 's' }}
       </p>
+      <div v-if="leads.length" class="agent-signals">
+        <span class="signal-stat signal-stat--missed">
+          ⚑ {{ signalCounts.missed }} missed opportunit{{ signalCounts.missed === 1 ? 'y' : 'ies' }}
+        </span>
+        <span class="signal-stat signal-stat--human">
+          ⚑ {{ signalCounts.human }} need{{ signalCounts.human === 1 ? 's' : '' }} human action
+        </span>
+      </div>
     </div>
 
     <!-- Loading main -->
@@ -150,7 +202,7 @@ function kindLabel(kind: string): string {
       <div class="state-block-icon">!</div>
       <h3>Could not load agent</h3>
       <p>{{ errorMain }}</p>
-      <button class="btn" @click="loadMain">Retry</button>
+      <button class="btn" @click="loadMain()">Retry</button>
     </div>
 
     <template v-else>
@@ -271,12 +323,34 @@ function kindLabel(kind: string): string {
 
       <!-- Call list -->
       <div class="card section">
-        <h3 class="section-title">Calls ({{ calls.length }})</h3>
+        <div class="calls-header">
+          <h3 class="section-title">Calls ({{ filteredCalls.length }}<span v-if="filteredCalls.length !== calls.length"> of {{ calls.length }}</span>)</h3>
+          <div v-if="leads.length" class="signal-filters">
+            <button
+              class="filter-toggle filter-toggle--missed"
+              :class="{ 'filter-toggle--on': filterMissed }"
+              :aria-pressed="filterMissed"
+              @click="filterMissed = !filterMissed"
+            >⚑ Missed opp</button>
+            <button
+              class="filter-toggle filter-toggle--human"
+              :class="{ 'filter-toggle--on': filterHuman }"
+              :aria-pressed="filterHuman"
+              @click="filterHuman = !filterHuman"
+            >⚑ Needs human</button>
+          </div>
+        </div>
 
         <div v-if="!calls.length" class="state-block" style="padding: 24px 0;">
           <div class="state-block-icon">—</div>
           <h3>No calls ingested yet</h3>
           <p>Calls appear here after the agent takes a call and the webhook ingests it.</p>
+        </div>
+
+        <div v-else-if="!filteredCalls.length" class="state-block" style="padding: 24px 0;">
+          <div class="state-block-icon">—</div>
+          <h3>No calls match the filter</h3>
+          <p>No calls flagged for the selected signal{{ filterMissed && filterHuman ? 's' : '' }}. Clear the filter to see all calls.</p>
         </div>
 
         <div v-else class="call-table">
@@ -285,9 +359,10 @@ function kindLabel(kind: string): string {
             <span>Time</span>
             <span>Duration</span>
             <span>Summary</span>
+            <span>Signals</span>
           </div>
           <button
-            v-for="call in calls"
+            v-for="call in filteredCalls"
             :key="call.callId"
             class="call-row"
             @click="emit('selectCall', call.callId)"
@@ -298,6 +373,18 @@ function kindLabel(kind: string): string {
             <span class="call-time">{{ formatTime(call.callAt) }}</span>
             <span class="call-dur">{{ formatDuration(call.durationSec) }}</span>
             <span class="call-summary">{{ call.summary }}</span>
+            <span class="call-signals">
+              <span
+                v-if="leadByCall.get(call.callId)?.missedOpportunity"
+                class="row-sig row-sig--missed"
+                title="Missed opportunity (R2.3)"
+              >MO</span>
+              <span
+                v-if="leadByCall.get(call.callId)?.humanActionNeeded"
+                class="row-sig row-sig--human"
+                title="Needs human action (R2.6)"
+              >HA</span>
+            </span>
             <span class="call-chevron">›</span>
           </button>
         </div>
@@ -374,6 +461,13 @@ function kindLabel(kind: string): string {
   border-radius: 8px;
   border-left: 3px solid var(--warn);
 }
+
+.agent-signals { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.signal-stat {
+  font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px;
+}
+.signal-stat--missed { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+.signal-stat--human  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
 
 /* Sections */
 .section { }
@@ -491,12 +585,46 @@ function kindLabel(kind: string): string {
 .evidence-call-link:active { transform: scale(0.96); }
 .evidence-call-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+/* Call list header + signal filters */
+.calls-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
+}
+.calls-header .section-title { margin-bottom: 0; }
+.signal-filters { display: flex; gap: 6px; }
+.filter-toggle {
+  font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+  padding: 4px 10px; border-radius: 999px; background: #fff;
+  border: 1px solid var(--border); color: var(--muted);
+  transition: background 120ms var(--ease-out), border-color 120ms var(--ease-out),
+    color 120ms var(--ease-out), transform 120ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .filter-toggle:hover { border-color: var(--muted); }
+}
+.filter-toggle:active { transform: scale(0.97); }
+.filter-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .filter-toggle:active { transform: none; }
+}
+.filter-toggle--missed.filter-toggle--on { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+.filter-toggle--human.filter-toggle--on { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+
+/* Per-row signal badges */
+.call-signals { display: flex; gap: 4px; align-items: center; }
+.row-sig {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.03em;
+  padding: 1px 5px; border-radius: 5px; line-height: 1.5;
+}
+.row-sig--missed { background: #fef3c7; color: #b45309; }
+.row-sig--human  { background: #dbeafe; color: #1d4ed8; }
+
 /* Call table */
 .call-table { display: flex; flex-direction: column; }
 
 .call-table-head {
   display: grid;
-  grid-template-columns: 52px 130px 80px 1fr;
+  grid-template-columns: 52px 130px 80px 1fr 64px;
   gap: 8px;
   padding: 6px 12px 8px;
   font-size: 11px;
@@ -509,7 +637,7 @@ function kindLabel(kind: string): string {
 
 .call-row {
   display: grid;
-  grid-template-columns: 52px 130px 80px 1fr 20px;
+  grid-template-columns: 52px 130px 80px 1fr 64px 20px;
   gap: 8px;
   align-items: center;
   padding: 11px 12px;

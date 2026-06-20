@@ -77,6 +77,45 @@ export interface CallAnalysis {
   summary: string;
 }
 
+// ─── Lead + observability signals (mirrors server/src/analysis/types.ts) ──────
+
+export type BookingStatus = 'booked' | 'not_booked' | 'reschedule' | 'cancelled' | 'unknown';
+
+/** Provenance of a lead's FACT fields: 'ghl' = native extractedData (ground-truth), 'llm' = inferred. */
+export type LeadSource = 'ghl' | 'llm';
+
+/**
+ * Per-call lead facts + the two observability signals (R2.3 missed opportunity,
+ * R2.6 human action needed). `source` flags whether the facts came from the agent's
+ * native `extractedData` (GHL-confirmed) or were inferred by the LLM; `native` holds the
+ * raw extractedData blob when present.
+ *
+ * The server's CallLead also carries `extraction` (the verbatim LLM LeadExtraction);
+ * it is intentionally NOT surfaced client-side — provenance is shown via `source` + the
+ * `native` blob, so the raw LLM extraction would be redundant in the UI.
+ */
+export interface CallLead {
+  callId: string;
+  locationId: string;
+  agentId?: string;
+  contactId?: string;
+  callerName?: string;
+  phone?: string;
+  email?: string;
+  problem?: string;
+  treatment?: string;
+  bookingStatus: BookingStatus;
+  bookedAt?: string;
+  confirmed: boolean;
+  missedOpportunity: boolean;
+  missedOpportunityReason?: string;
+  humanActionNeeded: boolean;
+  humanActionReason?: string;
+  source: LeadSource;
+  native?: Record<string, unknown> | null;
+  createdAt?: string;
+}
+
 // ─── Repository shapes (mirrors server/src/store/analysisRepository.ts) ───────
 
 export interface CallSummary {
@@ -319,6 +358,75 @@ export async function fetchRecommendations(params: {
   };
 }
 
+// ─── Leads + observability signals ───────────────────────────────────────────
+
+const BOOKING_STATUSES: BookingStatus[] = [
+  'booked',
+  'not_booked',
+  'reschedule',
+  'cancelled',
+  'unknown',
+];
+
+function validateLead(data: unknown): CallLead {
+  const o = assertObject(data, 'CallLead');
+  const optStr = (v: unknown): string | undefined => (typeof v === 'string' && v ? v : undefined);
+  const bookingStatus = BOOKING_STATUSES.includes(o.bookingStatus as BookingStatus)
+    ? (o.bookingStatus as BookingStatus)
+    : 'unknown';
+  return {
+    callId: assertString(o.callId, 'callId'),
+    locationId: typeof o.locationId === 'string' ? o.locationId : '',
+    agentId: optStr(o.agentId),
+    contactId: optStr(o.contactId),
+    callerName: optStr(o.callerName),
+    phone: optStr(o.phone),
+    email: optStr(o.email),
+    problem: optStr(o.problem),
+    treatment: optStr(o.treatment),
+    bookingStatus,
+    bookedAt: optStr(o.bookedAt),
+    confirmed: o.confirmed === true,
+    missedOpportunity: o.missedOpportunity === true,
+    missedOpportunityReason: optStr(o.missedOpportunityReason),
+    humanActionNeeded: o.humanActionNeeded === true,
+    humanActionReason: optStr(o.humanActionReason),
+    source: o.source === 'ghl' ? 'ghl' : 'llm',
+    native:
+      o.native && typeof o.native === 'object' && !Array.isArray(o.native)
+        ? (o.native as Record<string, unknown>)
+        : null,
+  };
+}
+
+/** One call's lead facts + signals. Returns null when no lead was stored for the call. */
+export async function fetchLead(callId: string): Promise<CallLead | null> {
+  const res = await fetch(`/api/leads/${encodeURIComponent(callId)}`);
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    throw new Error(`API ${res.status} from /api/leads/${callId}: ${await res.text().catch(() => '')}`);
+  }
+  return validateLead(await res.json());
+}
+
+/** Leads for a location, optionally scoped to an agent and/or filtered by signal. */
+export async function fetchLeads(params: {
+  locationId: string;
+  agentId?: string;
+  missedOpportunity?: boolean;
+  humanActionNeeded?: boolean;
+  limit?: number;
+}): Promise<CallLead[]> {
+  const qs = new URLSearchParams({ locationId: params.locationId });
+  if (params.agentId) qs.set('agentId', params.agentId);
+  if (params.missedOpportunity) qs.set('missedOpportunity', '1');
+  if (params.humanActionNeeded) qs.set('humanActionNeeded', '1');
+  if (params.limit) qs.set('limit', String(params.limit));
+  const data = await apiFetch(`/api/leads?${qs}`);
+  const obj = assertObject(data, 'LeadsResponse');
+  return assertArray(obj.leads, 'leads').map(validateLead);
+}
+
 // ─── Transcript parsing (mirrors server/src/analysis/transcript.ts exactly) ──
 
 const SPEAKER_BY_PREFIX: Record<string, Speaker> = { bot: 'agent', human: 'caller' };
@@ -439,4 +547,41 @@ export function formatTime(iso: string | undefined): string {
 
 export function kpiLabel(key: string): string {
   return KPI_LABELS[key as KpiKey] ?? key.replace(/_/g, ' ');
+}
+
+// ─── Lead presentation helpers ────────────────────────────────────────────────
+
+const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
+  booked: 'Booked',
+  not_booked: 'Not booked',
+  reschedule: 'Reschedule',
+  cancelled: 'Cancelled',
+  unknown: 'Unknown',
+};
+
+export function bookingStatusLabel(status: BookingStatus): string {
+  return BOOKING_STATUS_LABELS[status] ?? status;
+}
+
+/** CSS modifier suffix for a booking status pill (drives color). */
+export function bookingStatusClass(status: BookingStatus): string {
+  if (status === 'booked') return 'booked';
+  if (status === 'cancelled' || status === 'not_booked') return 'negative';
+  return 'neutral';
+}
+
+/** Human label for fact provenance — what the user sees on the source badge. */
+export function sourceLabel(source: LeadSource): string {
+  return source === 'ghl' ? 'GHL-confirmed' : 'Inferred';
+}
+
+/** Count the two observability signals across a set of leads (drives agent/overview tallies). */
+export function countSignals(leads: CallLead[]): { missed: number; human: number } {
+  let missed = 0;
+  let human = 0;
+  for (const l of leads) {
+    if (l.missedOpportunity) missed += 1;
+    if (l.humanActionNeeded) human += 1;
+  }
+  return { missed, human };
 }

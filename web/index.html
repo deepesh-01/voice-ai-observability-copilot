@@ -4,9 +4,54 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Voice AI Observability Copilot</title>
+    <style>
+      /* Pre-mount boot loader — shown during the ~1s before the JS bundle parses
+         and Vue mounts, so the first paint isn't a blank flash. Matches the in-app
+         .page-loader EXACTLY (fixed viewport-centered, 28px spinner, one text line)
+         so the spinner stays the same size and at the same spot through the whole
+         boot → Connecting… → Loading agents… sequence. Vue replaces #app's children
+         on mount, removing this automatically. */
+      #app-boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        background: #f7f8fa;
+        color: #6b7280;
+        font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+      }
+      #app-boot .boot-spinner {
+        box-sizing: border-box; /* match the app's global border-box → 28px outer, not 34 */
+        width: 28px;
+        height: 28px;
+        border: 3px solid #e6e8ec;
+        border-top-color: #2563eb;
+        border-radius: 50%;
+        animation: boot-spin 0.7s linear infinite;
+      }
+      #app-boot p {
+        margin: 0;
+      }
+      @keyframes boot-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #app-boot .boot-spinner {
+          animation-duration: 1.4s;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div id="app-boot"><div class="boot-spinner"></div><p>Loading…</p></div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

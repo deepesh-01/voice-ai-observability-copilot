@@ -92,10 +92,12 @@ async function loadInstalls() {
   }
 }
 
+// Bumped to ask the active view to re-fetch its data in place. Non-destructive:
+// it does NOT reset navigation, filters, or scroll — you stay where you are.
+const refreshSignal = ref(0);
+
 function refresh() {
-  // Reset to overview and reload
-  viewStack.value = [{ kind: 'overview' }];
-  loadInstalls();
+  refreshSignal.value += 1;
 }
 
 onMounted(loadInstalls);
@@ -140,21 +142,23 @@ function jumpToBreadcrumb(index: number) {
           <h1>Voice AI Observability Copilot</h1>
           <p>Monitor &amp; Analyze your HighLevel Voice AI agents — automated KPI scoring and recommendations.</p>
         </div>
-        <button class="btn ghost" :disabled="loadingInstalls" @click="refresh">
-          {{ loadingInstalls ? 'Refreshing…' : '↻ Refresh' }}
-        </button>
+        <div class="header-actions">
+          <!-- Connections demoted to a corner icon → opens a modal with the details. -->
+          <ConnectionsPanel :installs="installs" :backend-ok="backendOk" />
+          <button class="btn ghost" title="Reload this view's data" @click="refresh">
+            ↻ Refresh
+          </button>
+        </div>
       </div>
     </header>
 
-    <!-- Connections: collapsible, demoted below header -->
-    <ConnectionsPanel :installs="installs" :backend-ok="backendOk" />
-
-    <!-- No backend / loading state -->
-    <div v-if="loadingInstalls" class="card" style="margin-top: 18px;">
-      <div class="status-row">
-        <span class="spinner"></span>
-        <span>Connecting…</span>
-      </div>
+    <!-- Loading state — shared full-viewport loader (.page-loader). Identical size
+         + position to the boot spinner and the OverviewView loader, so the whole
+         boot → Connecting… → Loading agents… sequence is one continuous, fixed
+         spinner with no size change or layout shift. -->
+    <div v-if="loadingInstalls" class="page-loader">
+      <span class="spinner spinner-lg"></span>
+      <p>Connecting…</p>
     </div>
 
     <template v-else-if="backendOk === false">
@@ -202,26 +206,36 @@ function jumpToBreadcrumb(index: number) {
             </button>
           </nav>
 
-          <!-- Views -->
+          <!-- Views — each carries .view-enter so a drill-down reads as a spatial step,
+               not a hard cut. The v-if swap remounts the target view, replaying it. -->
+          <!-- No view-enter on the overview: it's the landing screen (not a drill-in),
+               and its transform would trap the fixed .page-loader inside it. -->
           <OverviewView
             v-if="currentView.kind === 'overview'"
             :key="locationId"
             :location-id="locationId"
+            :refresh-signal="refreshSignal"
             @select-agent="selectAgent"
           />
 
           <AgentView
             v-else-if="currentView.kind === 'agent'"
+            :key="`agent-${currentView.agentId}`"
+            class="view-enter"
             :location-id="locationId"
             :agent-id="currentView.agentId"
+            :refresh-signal="refreshSignal"
             @back="backFromAgent"
             @select-call="selectCall"
           />
 
           <CallView
             v-else-if="currentView.kind === 'call'"
+            :key="`call-${currentView.callId}`"
+            class="view-enter"
             :call-id="currentView.callId"
             :back-label="backLabelForCall"
+            :refresh-signal="refreshSignal"
             @back="backFromCall"
           />
         </div>
@@ -232,6 +246,7 @@ function jumpToBreadcrumb(index: number) {
 
 <style scoped>
 .header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.header-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 
 .btn { display: inline-block; background: var(--accent); color: #fff; text-decoration: none;
   padding: 8px 14px; border-radius: 8px; font-size: 14px; border: none; cursor: pointer; font-family: inherit; }
@@ -295,15 +310,13 @@ function jumpToBreadcrumb(index: number) {
 
 .crumb-sep { color: var(--muted); font-size: 15px; margin-right: 2px; }
 
-/* Status row / dot / spinner shared in root (read from global style.css) */
+/* Status row / dot shared in root. The spinner is intentionally NOT redefined here —
+ * the global .spinner/.spinner-lg (style.css) own it, so the loader stays 28px and
+ * matches every other load phase. (A scoped .spinner here used to override it to 16px.) */
 .status-row { display: flex; align-items: center; gap: 8px; font-size: 14px; }
 .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 .dot.warn { background: var(--warn); }
 .dot.ok { background: var(--ok); }
-
-.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border);
-  border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; }
-@keyframes spin { to { transform: rotate(360deg); } }
 
 .state-block { display: flex; flex-direction: column; align-items: center; gap: 10px;
   padding: 40px 20px; text-align: center; color: var(--muted); font-size: 14px; }
