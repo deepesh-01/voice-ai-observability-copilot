@@ -23,6 +23,7 @@ the next action. This is the audit trail that makes a solo "Team of One" build l
 | S-013 | 2026-06-19 | Recommendations engine (R2.5) + Vue 3 observability dashboard (R2.4/R2.6/E1); QA fixes + browser-screenshot verification | ADR-0009 | [session-013.md](./session-013.md) |
 | S-014 | 2026-06-19 | UI craft pass (Emil/UX-007), Playwright E2E + vitest, agent names (UX-008), recommendation caching (UX-009) | — | [session-014.md](./session-014.md) |
 | S-015 | 2026-06-20 | Auth→Postgres; README (D3); lead/booking observability signals; raw_call normalization; realistic native-extraction agent + 16 real calls + hybrid ingestion | ADR-0010/0011/0012/0013 | [session-015.md](./session-015.md) |
+| S-016 | 2026-06-20 | Dashboard lead/signal surfacing (task #12: CallView panel + AgentView badges/filters + Overview counts); full Emil polish; Connections→icon+modal; unified centered loader; non-destructive Refresh | — (UX-010..013) | [session-016.md](./session-016.md) |
 
 ## Session-close practice (always do this before a session ends)
 

@@ -86,9 +86,9 @@ The authoritative, always-current list of decisions lives in
 | Hosting & app scaffold | ✅ ADR-0004 — OAuth + dashboard shell run; permanent URL via cloudflared |
 | Storage | ✅ Postgres + JSONB; **`raw_call` source-of-record** with `call_analysis`/`call_lead` FK (ADR-0008/0011, supersedes ADR-0002 Mongo). OAuth tokens in Postgres (S-015). |
 | Architecture designed | ✅ Backend pipeline (capture raw → score → extract lead → persist → API) laid down |
-| Implementation | 🟢 Full loop live on real calls: capture → KPI score → **lead facts + observability signals** → persist → webhook → recommendations (R2.5, cached) → dashboard drill-down (R2.4/R2.6/E1). **Agent reconfigured for native `extractedData`; hybrid ingestion (native facts + LLM signals, ADR-0013) live on 16 real calls (S-015).** Lead/signals **dashboard surfacing** + read-API auth pending. |
-| Real-vs-mocked | ✅ Ingestion/scoring/persistence/recommendations/dashboard + lead/signal extraction 🟢 live on **16 real calls**; see `functional-vs-mocked.md` |
-| Tests | ✅ 59 server (incl. Postgres integration) · 10 web unit · 12 Playwright E2E |
+| Implementation | 🟢 Full loop live on real calls: capture → KPI score → **lead facts + observability signals** → persist → webhook → recommendations (R2.5, cached) → dashboard drill-down (R2.4/R2.6/E1). **Lead/signals now surfaced across all three views (S-016, task #12): CallView "Lead & Outcome" panel w/ provenance + native drawer, AgentView badges/filters, Overview counts.** Read-API auth pending. |
+| Real-vs-mocked | ✅ Ingestion/scoring/persistence/recommendations/dashboard + lead/signal extraction **+ surfacing** 🟢 live on **16 real calls**; see `functional-vs-mocked.md` |
+| Tests | ✅ 59 server (incl. Postgres integration) · 15 web unit · 19 Playwright E2E |
 | Demo recorded | ⏳ Pending |
 
-_Last updated: 2026-06-20 (Session S-015)._
+_Last updated: 2026-06-20 (Session S-016)._
