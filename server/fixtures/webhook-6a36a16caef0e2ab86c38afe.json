@@ -1,0 +1,51 @@
+{
+  "headers": {
+    "host": "voai.deepesh-engg.in",
+    "user-agent": "axios/0.21.4",
+    "content-length": "2340",
+    "accept": "application/json, text/plain, */*",
+    "accept-encoding": "gzip, br",
+    "cdn-loop": "cloudflare; loops=1",
+    "cf-connecting-ip": "34.44.65.250",
+    "cf-ipcountry": "US",
+    "cf-ray": "a0eb6a717b1fe826-ORD",
+    "cf-visitor": "{\"scheme\":\"https\"}",
+    "cf-warp-tag-id": "fe11b46c-21bf-4f73-af79-ad7c2b5a2120",
+    "connection": "keep-alive",
+    "content-type": "application/json",
+    "traceparent": "00-e7a4ac3b4f490ffac7e224de575e19bf-0af0f5c21abb3951-00",
+    "x-forwarded-for": "34.44.65.250",
+    "x-forwarded-proto": "https",
+    "x-ghl-signature": "qdCqQrlN3TB9j3Z5egl4qzdfMOOIt5HCf0Hl5RM/XZJH9znLQWUi6wgdUoRMhUK3ziYcz++dgWNdbfXgl+OeBA==",
+    "x-wh-signature": "og3nx+ZK6hmE/EsrjIuCOI72eFkogkRxexE+Pud8bJb0SkyRHGL+6SX9q0RJ7sQKrCY6JhpnXzdxk9L1uuVo+O8gzAmxVW8FKAFiiDUJANRvpdwe5Bf1f+fhVOUrTVMDo6s82Uw/2Sf4IBRTFn0m5kyZSBsjHmfwYcP55FoNTi2yXkMTyrsRVOFptBVG5KdDaIzKTmvgp4VtVDMbfBCTfH1s8Pqj9ZDi3v+hezlITpFrSMzI47b0+/GO2admdSN/7zdcjcdCKGuCebWJvkAbGuOwEklOYKZiW1lbgwHIDSenxkrMyUY87LA40YXmExnkHlE9kDUlwdiLy+dk3zsIQ99JW7vnv2oRb+CtMp5XvPuR1IIHV/RdnRv64HmE1HDnoQUS9RsrzKDVCWVMldP+zlmRwd4NUru1qe2Wl1VsM9Jre74AxtsGWh48aQsAjMiblE2hbq8L87HJ/IHF/PtR6w4iOYHLQ8ssGntZ4jJjUdwNpe0XemWTrGuDxb741sZnxuTv2h9pFFunchg0rHQN3nJ58gxNVhAVDGQBMf+LA71irxwB2uAvLT61TvQW6oBYObhQgmKcsOzpFtOtBe+JyCqJfH3aj6LLrlcj9lInM8BpzzKO7us4dW61xajN3Kva0wLrRTUiY8FmwtfSagnG9mqUiSILq+gOThgVo7WmhQ4="
+  },
+  "body": {
+    "type": "VoiceAiCallEnd",
+    "locationId": "B7TzvBb6H6QvDNdEEhlt",
+    "versionId": "6a344e6ddd3d8c9f262936f5",
+    "appId": "6a341c086a3eceb7ad2e99f9",
+    "id": "6a36a16caef0e2ab86c38afe",
+    "contactId": "uJTXf5GbFynDMPPrD16K",
+    "createdAt": "2026-06-20T14:19:24.947Z",
+    "duration": 74,
+    "executedCallActions": [],
+    "agentId": "6a35206c88ba8e0f1c707f02",
+    "summary": "The user called to report ongoing pain in their son's tooth after a root canal treatment at the clinic and expressed frustration about not being able to reach the doctor. The agent offered to escalate the issue to the dental team, but the user refused to provide contact details or speak further, insisting on speaking directly to the doctor. The call ended without resolution.",
+    "transcript": "bot:Thanks for calling BrightSmile Dental, this is Jessica. How can I help you today — are you looking to book an appointment, or do you have a question about our services?\nhuman:I got my son root canal in your clinic last week And this week, whole week, his tooth has been paining, and have not been able to connect to the doctor. Is really frustrating. \nbot:I'm so sorry to hear your son has been in pain after his root canal — that sounds really frustrating. While I can't provide medical advice, I can help get this escalated to our team right away so they can follow up with you. Can I please have your name and your son's name to make sure we connect you to the right person?\nhuman:I don't want to talk to you. I want to talk to real doctor. Connect me with the doctor. \nbot:I completely understand your concern and want to make sure your son gets the care he needs. While I can’t connect you directly to the dentist, I’ll make sure this is flagged as urgent for our team. Can I confirm your contact details so they can reach out to you as soon as possible?\nhuman:No. I will find the doctors, the man, directly contact with him. I don't want to talk to any random shit AI. Thank you. \nbot:I understand. I hope your son feels better soon. Take \n",
+    "translation": null,
+    "extractedData": {
+      "name": null,
+      "Last Name": null,
+      "email": null,
+      "Phone": null,
+      "Chief Complaint": "Tooth pain after root canal",
+      "Treatment Interest": "Root canal",
+      "DateTimeOfBooking": null,
+      "bookingInterest": null,
+      "IsHuamnHandover": null
+    },
+    "trialCall": true,
+    "timestamp": "2026-06-20T14:20:43.036Z",
+    "webhookId": "dc5cf4f2-a5cf-47f4-8ba7-a0fb26e2e338"
+  }
+}

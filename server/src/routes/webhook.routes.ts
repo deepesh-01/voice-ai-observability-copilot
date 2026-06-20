@@ -16,11 +16,19 @@ const SAMPLE_PATH = resolve(here, '../../fixtures/webhook-sample.json');
 /** Calls currently being scored — dedupes GHL's rapid retries of the same delivery. */
 const inFlight = new Set<string>();
 
-/** Snapshot the exact webhook (headers + body) so we can confirm shape/signature. */
+/**
+ * Snapshot the exact webhook (headers + body) so we can confirm shape/signature.
+ * Writes the rolling `webhook-sample.json` AND a per-call `webhook-<id>.json`, so a batch
+ * of real calls is fully preserved (the canonical shape source for the synthetic generator).
+ */
 async function snapshot(req: Request): Promise<void> {
   try {
     await mkdir(dirname(SAMPLE_PATH), { recursive: true });
-    await writeFile(SAMPLE_PATH, JSON.stringify({ headers: req.headers, body: req.body }, null, 2));
+    const record = JSON.stringify({ headers: req.headers, body: req.body }, null, 2);
+    await writeFile(SAMPLE_PATH, record);
+    const body = (req.body ?? {}) as { id?: string; callId?: string };
+    const id = body.id ?? body.callId;
+    if (id) await writeFile(resolve(dirname(SAMPLE_PATH), `webhook-${id}.json`), record);
   } catch {
     /* best-effort */
   }

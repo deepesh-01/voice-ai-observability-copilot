@@ -1,7 +1,11 @@
-import { getCallLog, getAgentPrompt } from '../ghl/api.js';
+import { getCallLog, getAgentPrompt, getContact } from '../ghl/api.js';
 import { parseTranscript } from '../analysis/transcript.js';
 import { scoreCall } from '../analysis/score.js';
-import { analysisRepo, type StoredCall } from '../store/analysisRepository.js';
+import { extractLead, assembleLead } from '../analysis/extractLead.js';
+import { analysisRepo } from '../store/analysisRepository.js';
+import { rawCallRepo } from '../store/rawCallRepository.js';
+import { leadRepo } from '../store/leadRepository.js';
+import type { Turn } from '../analysis/types.js';
 
 /** Raw GHL call object — from getCallLog (`id`) or the VoiceAiCallEnd webhook (also `id`). */
 export interface RawCallLog {
@@ -33,6 +37,19 @@ export async function ingestRawCall(
 ): Promise<IngestResult> {
   const callId = raw.id ?? raw.callId;
   if (!callId) throw new Error('Raw call has no id.');
+
+  // Capture the raw call FIRST — the source-of-record (raw_call), before any scoring.
+  // So if scoring/extraction fails below, the call is still persisted and reprocessable.
+  await rawCallRepo.saveRaw({
+    callId,
+    locationId,
+    agentId: raw.agentId,
+    contactId: typeof raw.contactId === 'string' ? raw.contactId : undefined,
+    durationSec: typeof raw.duration === 'number' ? raw.duration : undefined,
+    callAt: typeof raw.createdAt === 'string' ? raw.createdAt : undefined,
+    payload: raw,
+  });
+
   if (!opts.force && (await analysisRepo.has(callId))) {
     return { callId, status: 'skipped-exists' };
   }
@@ -46,14 +63,44 @@ export async function ingestRawCall(
     (raw.agentId ? await getAgentPrompt(raw.agentId, locationId) : undefined) ?? NO_GOAL;
 
   const analysis = await scoreCall({ callId, agentId: raw.agentId, agentGoal: goal, turns });
-  await analysisRepo.save({
-    analysis,
-    locationId,
-    durationSec: typeof raw.duration === 'number' ? raw.duration : undefined,
-    callAt: typeof raw.createdAt === 'string' ? raw.createdAt : undefined,
-    rawCall: raw,
-  });
+  await analysisRepo.save({ analysis, locationId });
+
+  // Extract + persist the lead/booking layer. Best-effort and non-blocking: a failure
+  // here must not lose the scored call (the analysis is already committed above).
+  await ingestLead(callId, raw, turns, locationId).catch((err) =>
+    console.warn(`[ingest] lead extraction failed for ${callId}: ${(err as Error).message}`),
+  );
+
   return { callId, status: 'ingested', overallScore: analysis.overallScore };
+}
+
+/**
+ * Derive the structured lead from a call: LLM extraction + the authoritative contact
+ * record → a persisted CallLead carrying the missed-opportunity / human-action signals.
+ */
+async function ingestLead(
+  callId: string,
+  raw: RawCallLog,
+  turns: Turn[],
+  locationId: string,
+): Promise<void> {
+  const extraction = await extractLead({
+    callId,
+    turns,
+    ghlSummary: typeof raw.summary === 'string' ? raw.summary : undefined,
+  });
+  const contactId = typeof raw.contactId === 'string' ? raw.contactId : undefined;
+  const contact = contactId ? await getContact(contactId, locationId) : undefined;
+  const lead = assembleLead({
+    callId,
+    locationId,
+    agentId: raw.agentId,
+    contactId,
+    extraction,
+    contact,
+    extractedData: raw.extractedData, // native GHL ground-truth (preferred over LLM facts)
+  });
+  await leadRepo.saveLead(lead);
 }
 
 /**

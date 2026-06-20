@@ -120,6 +120,94 @@ export interface AgentRecommendations {
   summary: string;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Lead + booking data — observability signals extracted per call.
+// The KPI analysis answers "how did the agent do?"; this answers "what business
+// outcome did the call produce, and does it need a human?" — feeding two of the
+// brief's core signals: missed opportunities (R2.3) and human-action / "Use Actions"
+// (R2.6). This is observability, NOT a booking-management workflow: we flag, we don't
+// run the bookings (HighLevel's CRM owns that).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** What happened with a booking on this call. */
+export type BookingStatus = 'booked' | 'not_booked' | 'reschedule' | 'cancelled' | 'unknown';
+
+/**
+ * Provenance of a lead's FACT fields (identity + booking). 'ghl' = taken from the agent's
+ * native `extractedData` (ground-truth); 'llm' = inferred from the transcript. The two
+ * observability SIGNALS (missed-opportunity / human-action) are always LLM regardless.
+ */
+export type LeadSource = 'ghl' | 'llm';
+
+/**
+ * The lead facts the LLM pulls from a transcript (extraction-only layer — no
+ * contact-record data mixed in yet). Optional fields are absent when the call didn't
+ * surface them. Kept separate from CallLead so the LLM's raw output is testable and
+ * we can override identity from the authoritative contact record.
+ */
+export interface LeadExtraction {
+  /** Caller's name if stated on the call. */
+  callerName?: string;
+  /** Phone if spoken aloud (the contact record is the authoritative source). */
+  phone?: string;
+  email?: string;
+  /** Why they called, in one phrase. */
+  problem?: string;
+  /** Specific treatment/service asked about, if any. */
+  treatment?: string;
+  bookingStatus: BookingStatus;
+  /** ISO 8601 datetime the appointment was set for, if one was agreed. */
+  bookedAt?: string;
+  /** Did the agent explicitly confirm the booking back to the caller on the call. */
+  confirmed: boolean;
+  /** R2.3 signal: the caller showed intent the agent failed to convert (didn't book,
+   *  didn't capture contact info, didn't offer the service). */
+  missedOpportunity: boolean;
+  missedOpportunityReason?: string;
+  /** R2.6 signal: this call needs a human to act (unconfirmed booking, unresolved
+   *  question, escalation, promised callback). The "Use Action" at call granularity. */
+  humanActionNeeded: boolean;
+  humanActionReason?: string;
+}
+
+/**
+ * A persisted lead: the extraction, with identity resolved from the GHL contact
+ * record (authoritative over the transcript). One row per call (`call_lead`).
+ * No approval/workflow state — the two signals above are the actionable output.
+ */
+export interface CallLead {
+  callId: string;
+  locationId: string;
+  agentId?: string;
+  contactId?: string;
+  callerName?: string;
+  phone?: string;
+  email?: string;
+  problem?: string;
+  treatment?: string;
+  bookingStatus: BookingStatus;
+  bookedAt?: string;
+  confirmed: boolean;
+  missedOpportunity: boolean;
+  missedOpportunityReason?: string;
+  humanActionNeeded: boolean;
+  humanActionReason?: string;
+  /** Where the fact fields came from: 'ghl' native extractedData (preferred) or 'llm'. */
+  source: LeadSource;
+  /** The raw GHL `extractedData` blob (native ground-truth), when the call carried one. */
+  native?: Record<string, unknown> | null;
+  /** Full LLM extraction kept verbatim for fidelity (same pattern as CallAnalysis). */
+  extraction: LeadExtraction;
+  createdAt?: string;
+}
+
+/** Identity resolved from the authoritative GHL contact record (Contacts API). */
+export interface ContactInfo {
+  name?: string;
+  phone?: string;
+  email?: string;
+}
+
 /** The full analysis of one call — the scorer's output and the dashboard's input. */
 export interface CallAnalysis {
   callId: string;

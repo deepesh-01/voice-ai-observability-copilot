@@ -1,0 +1,51 @@
+{
+  "headers": {
+    "host": "voai.deepesh-engg.in",
+    "user-agent": "axios/0.21.4",
+    "content-length": "2786",
+    "accept": "application/json, text/plain, */*",
+    "accept-encoding": "gzip, br",
+    "cdn-loop": "cloudflare; loops=1",
+    "cf-connecting-ip": "35.222.110.7",
+    "cf-ipcountry": "US",
+    "cf-ray": "a0eb6d4b8b5f72e4-ORD",
+    "cf-visitor": "{\"scheme\":\"https\"}",
+    "cf-warp-tag-id": "fe11b46c-21bf-4f73-af79-ad7c2b5a2120",
+    "connection": "keep-alive",
+    "content-type": "application/json",
+    "traceparent": "00-8e81fe9a5890d7333fd707d3f22fed2a-17010d41a2073cbe-00",
+    "x-forwarded-for": "35.222.110.7",
+    "x-forwarded-proto": "https",
+    "x-ghl-signature": "Kj6seyer2m1IUkgeVSPeuH28/ElQc84baNfp/MHJ3Tr0hUdRWLXq8ubdmZQUGP28PhGxfOX29a0PUs0QlF2BAw==",
+    "x-wh-signature": "ZMgb7sk359w0tATMXh056Lr/Y5PI0tIb5nNgwtkrKSa1J7+P+ws3YUYhzV8QmFgBnokyKmCr0c6+zxQjVOMD3rnPWZrYUpuHuX0qIaWICCI8wtgSl3UFzVEXAcoPa5auuPDkmbcXw/r+LxjWdWnhgMEBpi5d0SkcXcEDM1QIHxS67CgDDRxLF+GixOE2g7iwjzc2nW0+W3UzPcNce1Jkm8SDdbeZf/NeU3pXA9yE8/a8u8g0P833fMwagF/tomJQSHfcr6twVEyCir7S+vVZl4f8h33BPDJwJ1c1j5MJb0g+nqmTJoAbg0whtuZPqKMd9V7cV626IIJ64eiYSxlQ1QRCeg2Gns/9SaCbFNv9yo1dK4gYRW+5iHQ8Ph+++eAOv2UHkDwx8VPHjG7Egn4ef2PCadFQB2S0B1JWoLO57PargfaZXILw3015DW2frDmnqK6+Ev4DECQ0FKQdwCRkuzvXPoX+voDdNDtEjJivtNPFr0N2j7WNUiHRhjWyzqCxyb3WoEvEppjmSFGErgwYNIe+g2uhF+kj9NQKrGd64N7EssWXQxrg6U6rQL7XPSiFa58KaMuIpDtdEaTfWH8DZ9+MqN7IFKiKZCE9Tn0pNoJ2Dx7oDXTXKvdzxmtEHytGsSL7sEVzTbaeHDXXJ+eB44HAKOki9zymab5C9o15Xnk="
+  },
+  "body": {
+    "type": "VoiceAiCallEnd",
+    "locationId": "B7TzvBb6H6QvDNdEEhlt",
+    "versionId": "6a344e6ddd3d8c9f262936f5",
+    "appId": "6a341c086a3eceb7ad2e99f9",
+    "id": "6a36a1bf88ba8e022c70f070",
+    "contactId": "uJTXf5GbFynDMPPrD16K",
+    "createdAt": "2026-06-20T14:20:47.108Z",
+    "duration": 109,
+    "executedCallActions": [],
+    "agentId": "6a35206c88ba8e0f1c707f02",
+    "summary": "The user called BrightSmile Dental concerned about black dots on their teeth and booked a dental exam appointment for Tuesday, June 23rd at 2 PM. The agent confirmed the booking details, collected the user's name and phone number, and provided the clinic address and parking information.",
+    "transcript": "bot:Thanks for calling BrightSmile Dental, this is Jessica. How can I help you today — are you looking to book an appointment, or do you have a question about our services?\nhuman:Actually, I can see my teeth having some black dots, and I'm really worried because I want my teeth to always look bright and clean and white. So I wanted to come in for an inspection. \nbot:Got it, I understand how concerning that can be. Let’s get you scheduled for a dental exam so the dentist can take a closer look and figure out what’s going on. When would you prefer to come in? We’re open Monday to Friday from 9 AM to 6 PM, and Saturday from 9 AM to 1 PM.\nhuman:Let's book it for Tuesday, two PM. \nbot:Alright, let me check. We can book you for Tuesday, June 23rd, at 2 PM. Could I have your full name to reserve the appointment?\nhuman:My name is Dibesh Rathore. \nbot:Thank you, Dibesh. Could I get your best contact number or email to confirm the appointment?\nhuman:Yeah. Seven nine eight seven two one five seven two eight. \nbot:Got it. So, Dibesh Rathore, I’ve booked you for a dental exam on Tuesday, June 23rd, at 2 PM. Your contact number is seven nine eight seven two one five seven two eight. Does everything look correct?\nhuman:Yeah. Can you also share the address? \nbot:Of course! We’re located at one one four west one twenty-fourth street, New York, New York, one zero zero two seven. Let me know if you need anything else!\nhuman:Do you also have parking? \nbot:We don’t have dedicated parking, but there’s usually street parking available nearby. Let me know if you need help with anything else!\nhuman:No. Thank you. \nbot:You're welcome, Dibesh! Your appointment is all set for Tuesday at 2 PM. Have a great day, and we’ll see you then!\n",
+    "translation": null,
+    "extractedData": {
+      "name": "Dibesh",
+      "Last Name": "Rathore",
+      "email": null,
+      "Phone": "+17987215728",
+      "Chief Complaint": "black dots on teeth",
+      "Treatment Interest": "dental exam",
+      "DateTimeOfBooking": "Jun 23 2026 14:00",
+      "bookingInterest": "Booked",
+      "IsHuamnHandover": null
+    },
+    "trialCall": true,
+    "timestamp": "2026-06-20T14:22:39.843Z",
+    "webhookId": "7a4dfe69-096d-4546-8095-1d7bfeb3c444"
+  }
+}

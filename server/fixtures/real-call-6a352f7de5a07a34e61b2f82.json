@@ -1,0 +1,15 @@
+{
+  "contactId": "uJTXf5GbFynDMPPrD16K",
+  "createdAt": "2026-06-19T12:01:01.732Z",
+  "duration": 99,
+  "agentId": "6a35206c88ba8e0f1c707f02",
+  "isAgentDeleted": false,
+  "summary": "The user inquired about treatment for micro fractures in teeth and expressed interest in consulting a dentist for advice. The agent offered to schedule an appointment and arranged for the dental team to follow up with the user, collecting the user's name and phone number for contact. The call ended with confirmation that the team would reach out to the user soon.",
+  "transcript": "bot:Thanks for calling BrightSmile Dental! This is Jessica. Are you looking to book an appointment, or is there something else I can help with?\nhuman:Do you help with micro fractures in the front side of teeth? \nbot:That’s a great question! I’m not a clinical expert, but our dental team does handle a variety of concerns, including cosmetic and restorative treatments. I’d recommend booking an appointment so the dentist can assess the micro fractures and suggest the best solution. Would you like me to help schedule that for you?\nhuman:No. That's it for now. But it would be great if I could talk to a dentist who could give me some real advice, and then I would like to go for consultation. \nbot:Got it! I’ll make a note for our team to follow up with you. They’ll connect you with a dentist who can provide advice and guide you on the next steps. Could I take your name and phone number so they can reach out?\nhuman:Yeah. Sure. My name is Dipesh. How do I share my phone number with you? \nbot:Thanks, Dipesh! You can just share your phone number with me now, and I’ll make sure it’s passed along to the team for follow-up.\nhuman:Sure. Then listen up. Seven nine eight seven two one five seven two eight. \nbot:Got it. That’s seven nine eight seven two one five seven two eight, correct?\nhuman:Yep. \nbot:Perfect, Dipesh! I’ll have our team reach out to you soon. If there’s anything else you need, feel free to call back. Take care!\nhuman:Thank you. \nbot:You're welcome, Dipesh! Have a great day ahead.\n",
+  "translation": null,
+  "extractedData": {},
+  "trialCall": true,
+  "id": "6a352f7de5a07a34e61b2f82",
+  "executedCallActions": [],
+  "traceId": "4cd2c53b-b12d-45fe-9f06-9b503bdcf429"
+}

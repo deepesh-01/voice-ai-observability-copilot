@@ -1,0 +1,51 @@
+{
+  "headers": {
+    "host": "voai.deepesh-engg.in",
+    "user-agent": "axios/0.21.4",
+    "content-length": "1732",
+    "accept": "application/json, text/plain, */*",
+    "accept-encoding": "gzip, br",
+    "cdn-loop": "cloudflare; loops=1",
+    "cf-connecting-ip": "34.71.23.213",
+    "cf-ipcountry": "US",
+    "cf-ray": "a0eb53b5ef6ce829-ORD",
+    "cf-visitor": "{\"scheme\":\"https\"}",
+    "cf-warp-tag-id": "fe11b46c-21bf-4f73-af79-ad7c2b5a2120",
+    "connection": "keep-alive",
+    "content-type": "application/json",
+    "traceparent": "00-48c50e82ee6f73c4c8522cdda1ffa90f-78d2c48d5a0c19e6-00",
+    "x-forwarded-for": "34.71.23.213",
+    "x-forwarded-proto": "https",
+    "x-ghl-signature": "qitbCO10dxA08P5A/cBYLFQ/y5ZSN/D8+RuKs/1mARPRHUvz5grWkEGcjM2zczQKqz7rJ/Kx1xS/XqNgUJ7XCA==",
+    "x-wh-signature": "TsQS8aSV5idDwtd+wNlDr/FYEldStGc359vQRnki5VhVcmIGH6rFEbhtrH6YQKXrASY4X2vnUYVZZUSHgZLtVebW62G/zLHLcZQrWo+Wo50SbhyyWL4tSQmh+zC5LWVgaP7aiy1G2F7zgdFk/Aon7yXWzGCLrMXP9SoVQYk5DJd2nyIVtTN52ERrVVa+o4iHBq5AqNlq7eziOLaj6ZSeLbtmmZ+fKmyUhMv1VY9zXu+h1qrpblambclWHQzYJ6xFVm9XBoQ+D1/Nctzw95MFH33GGbJZhXw6ctWL00/KXeqXuCoWuV+VRmSCQScl8TqBAWaKJ76QCO71FjiNE0+aO2eOMvvdxZC2YlwAEc12rG/bpbrDRwuNZsevF7vkzG3N7qG6o1J+yW5Cu5gdtvC6EMxlfCiMp5GMeOtevYpMiU1c6o9N2x6v96LeRO1ex+YQd24FMsLwnebW9qqo1bHytZzt+y71OQK68WQCZ4Z54UVa+MmzCum2jqcW7gceYcH5Wr69o84zUIOt/YyYALssBJOyZ0afyazik/q+Pk6smFgBkDB0ubt2YHAmge7JwibGvgUxMkF9QUfcZA+hr2dniSmyy7+59B1hofUaVgBWReRjxxC/R9qKuVRMvF2SspHVI/1Qxtp+2TIggB37wEtFVZ73PjAq9NvWGSdyj4xmCJM="
+  },
+  "body": {
+    "type": "VoiceAiCallEnd",
+    "locationId": "B7TzvBb6H6QvDNdEEhlt",
+    "versionId": "6a344e6ddd3d8c9f262936f5",
+    "appId": "6a341c086a3eceb7ad2e99f9",
+    "id": "6a369de74dc361080f2e7ccd",
+    "contactId": "uJTXf5GbFynDMPPrD16K",
+    "createdAt": "2026-06-20T14:04:23.275Z",
+    "duration": 44,
+    "executedCallActions": [],
+    "agentId": "6a35206c88ba8e0f1c707f02",
+    "summary": "The user called BrightSmile Dental to inquire about dental implants. The agent informed the user that implants are not provided at the clinic and suggested a general exam instead, but the user declined to book an appointment. The call ended with the agent offering further assistance if needed.",
+    "transcript": "bot:Thanks for calling BrightSmile Dental, this is Jessica. How can I help you today — are you looking to book an appointment, or do you have a question about our services?\nhuman:I wanted to know about if you provide implants \nbot:We don't provide dental implants here at BrightSmile Dental since we're a general and family dental clinic. For implants, you'd need to visit a specialist, like an oral surgeon. However, if you'd like, we can book you for a general exam to assess your dental health and discuss other restorative options. Would you like me to help you schedule that?\nhuman:No. That's it. I really want to book for Thank you. \nbot:Alright, no problem at all! If you ever need anything, feel free to reach out. Have a great day!\n",
+    "translation": null,
+    "extractedData": {
+      "name": null,
+      "Last Name": null,
+      "email": null,
+      "Phone": null,
+      "Chief Complaint": null,
+      "Treatment Interest": "Dental implants",
+      "DateTimeOfBooking": null,
+      "bookingInterest": "Not Interested",
+      "IsHuamnHandover": null
+    },
+    "trialCall": true,
+    "timestamp": "2026-06-20T14:05:11.904Z",
+    "webhookId": "ffbf0834-1739-4f60-970d-adc968213682"
+  }
+}

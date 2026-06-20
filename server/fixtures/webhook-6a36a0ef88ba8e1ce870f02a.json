@@ -1,0 +1,51 @@
+{
+  "headers": {
+    "host": "voai.deepesh-engg.in",
+    "user-agent": "axios/0.21.4",
+    "content-length": "2841",
+    "accept": "application/json, text/plain, */*",
+    "accept-encoding": "gzip, br",
+    "cdn-loop": "cloudflare; loops=1",
+    "cf-connecting-ip": "35.254.21.69",
+    "cf-ipcountry": "US",
+    "cf-ray": "a0eb67f94a43a577-ORD",
+    "cf-visitor": "{\"scheme\":\"https\"}",
+    "cf-warp-tag-id": "fe11b46c-21bf-4f73-af79-ad7c2b5a2120",
+    "connection": "keep-alive",
+    "content-type": "application/json",
+    "traceparent": "00-81d1593d018dea6c4d2eb79a2ac6d0cc-859fcc1364ae9bd6-00",
+    "x-forwarded-for": "35.254.21.69",
+    "x-forwarded-proto": "https",
+    "x-ghl-signature": "qC8DbI+p0wVGjWoIHSN/kMBRLm1mZL5Xx5iqv3UGBBc67dqI55AY+5otRSNr8VH1W6jVQayIG64cz2xKMHqtBg==",
+    "x-wh-signature": "NWcr/Z2STpLhuoodK5ntTFWp7v5exRUyWDY9/t4IOlIsl5AWNdwcdYp3NbLVVmPHPxRdhDxwugioC2Atkpb5Uqh20+ykyAiGyaeU9JgZAzuUL/X7/hVsDiJ8ib+K15/EgpQcuqqvxmXbcfsJP9DPx0/Vh0olGkOlY7uTlxvROfYMSiEPK0v9bk7sE0ESD0E+fDJTCh1Uno77I/Ff7+uMqo44NAnFjMIHH/Ep33GPtFXHWytIPMB/FQb+orq15eFNnlZNDd3SWO6KpSgSaIJP42sZKl2gagLZFHXUJ/rKIPXLyV1BNiwis1thTEs3LzeAvhRfnUnNTeQb0/FHmZpdkFgdKXf3CYzr7S+nkc32GYPycxzSB/8LeZTohufSIFQoTgFz3xT5fBbqwL8jLMxXC+L9EvuK4luY6B+M834APdpIeJcdEoIVu3GC+oGg5mRva30Q5dQdfNF37HoQqgl9SNlcxcHmO66dU74I1dGQCjTv9N2v1nCtG+6PMglwRjVH+itSOGm1UwLpFTlefiNZwLM0E1Fquko9whFtAkzv1ajbsciwu2d1yjHo524dlA7wuHKsLfHSKGgD3ltkGP+Ei1RGFAnBLe4SVDWm0pEqbSO/hcJfEAltehZulyEp8eDeOUb9nT4o+NDUHIQEFmeyAT9U8EdTfHyhoO11V5CxXEs="
+  },
+  "body": {
+    "type": "VoiceAiCallEnd",
+    "locationId": "B7TzvBb6H6QvDNdEEhlt",
+    "versionId": "6a344e6ddd3d8c9f262936f5",
+    "appId": "6a341c086a3eceb7ad2e99f9",
+    "id": "6a36a0ef88ba8e1ce870f02a",
+    "contactId": "uJTXf5GbFynDMPPrD16K",
+    "createdAt": "2026-06-20T14:17:19.472Z",
+    "duration": 98,
+    "executedCallActions": [],
+    "agentId": "6a35206c88ba8e0f1c707f02",
+    "summary": "The user inquired about the differences between regular teeth cleaning and deep teeth cleaning, including pricing details. The agent explained both procedures and their costs, and offered to book an appointment, but the user declined due to expense concerns. The call ended with the user expressing inability to afford the treatment at this time.",
+    "transcript": "bot:Thanks for calling BrightSmile Dental, this is Jessica. How can I help you today — are you looking to book an appointment, or do you have a question about our services?\nhuman:I wanted to know about the teeth cleaning and deep teeth cleaning. What are the differences, and which one should I do? \nbot:Great question! A regular teeth cleaning, also called scaling and polishing, is a preventive procedure that removes plaque, tartar, and surface stains from above the gumline. It's typically done during routine check-ups to maintain healthy teeth and gums.\n\nDeep cleaning, or scaling and root planing, is more intensive. It's used to treat gum disease and involves cleaning below the gumline to remove bacteria, tartar, and plaque from the tooth roots. This helps prevent further gum damage and promotes healing.\n\nAs for which one you need, that depends on the condition of your teeth and gums. Our dentist would assess that during an exam. If you'd like, I can help you book an appointment for an evaluation. Would that work for you?\nhuman:What are the pricing of both? \nbot:Sure! For a regular teeth cleaning, the cost typically ranges from seventy-five to two hundred dollars. For deep cleaning, which is done per quadrant of the mouth, it ranges from one hundred fifty to three hundred fifty dollars per quadrant.\n\nThese are ballpark estimates, and the exact cost would depend on the dentist's assessment. If you have insurance, preventive cleanings are often fully covered, while deep cleaning is usually covered around fifty to eighty percent after your deductible. Would you like to schedule an appointment to get started?\nhuman:No. No. This is really expensive. I can't afford it right now. Thank you. \nbot:I completely understand — dental care can feel like a big expense. If \n",
+    "translation": null,
+    "extractedData": {
+      "name": null,
+      "Last Name": null,
+      "email": null,
+      "Phone": null,
+      "Chief Complaint": null,
+      "Treatment Interest": "Teeth cleaning",
+      "DateTimeOfBooking": null,
+      "bookingInterest": "Not Interested",
+      "IsHuamnHandover": null
+    },
+    "trialCall": true,
+    "timestamp": "2026-06-20T14:19:01.874Z",
+    "webhookId": "a4ab413d-72c9-4509-b3b4-22c579a06552"
+  }
+}

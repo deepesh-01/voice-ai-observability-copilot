@@ -1,15 +1,25 @@
 import { getPool, initSchema } from '../db/pool.js';
 import type { AgentRecommendations, CallAnalysis } from '../analysis/types.js';
 
-/** A scored call plus the metadata we persist alongside the analysis. */
+/**
+ * A scored call as read back: the analysis plus the call metadata/raw payload that
+ * now live on `raw_call` (assembled via JOIN). This is the read shape; persisting only
+ * needs SaveAnalysisInput, since the raw call is saved separately (RawCallRepository).
+ */
 export interface StoredCall {
   analysis: CallAnalysis;
   locationId: string;
   durationSec?: number;
   /** When the call happened (ISO 8601), from the GHL call log. */
   callAt?: string;
-  /** The raw GHL call-log JSON (kept verbatim for fidelity). */
+  /** The raw GHL call-log JSON (kept verbatim for fidelity), from raw_call. */
   rawCall: unknown;
+}
+
+/** What persisting an analysis needs — the raw call is stored via RawCallRepository. */
+export interface SaveAnalysisInput {
+  analysis: CallAnalysis;
+  locationId: string;
 }
 
 /** Lightweight row for list/dashboard views — no heavy JSONB payload. */
@@ -42,7 +52,7 @@ export const UNASSIGNED_AGENT = '__unassigned__';
 export interface AnalysisRepository {
   init(): Promise<void>;
   has(callId: string): Promise<boolean>;
-  save(rec: StoredCall): Promise<void>;
+  save(rec: SaveAnalysisInput): Promise<void>;
   get(callId: string): Promise<StoredCall | null>;
   list(opts: { locationId: string; agentId?: string; limit?: number }): Promise<CallSummary[]>;
   /** Full analyses for the most recent calls — the evidence the recommendation synthesis reads. */
@@ -67,32 +77,22 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
     return rows.length > 0;
   }
 
-  async save(rec: StoredCall): Promise<void> {
+  async save(rec: SaveAnalysisInput): Promise<void> {
     const a = rec.analysis;
     const pool = getPool();
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
+      // The raw_call row must already exist (saved on ingest arrival) — the FK enforces it.
       await client.query(
         `INSERT INTO call_analysis
-           (call_id, location_id, agent_id, overall_score, summary, duration_sec, analysis, raw_call, call_at, scored_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9, now())
+           (call_id, location_id, agent_id, overall_score, summary, analysis, scored_at)
+         VALUES ($1,$2,$3,$4,$5,$6, now())
          ON CONFLICT (call_id) DO UPDATE SET
            location_id=EXCLUDED.location_id, agent_id=EXCLUDED.agent_id,
            overall_score=EXCLUDED.overall_score, summary=EXCLUDED.summary,
-           duration_sec=EXCLUDED.duration_sec, analysis=EXCLUDED.analysis,
-           raw_call=EXCLUDED.raw_call, call_at=EXCLUDED.call_at, scored_at=now()`,
-        [
-          a.callId,
-          rec.locationId,
-          a.agentId ?? null,
-          a.overallScore,
-          a.summary,
-          rec.durationSec ?? null,
-          JSON.stringify(a),
-          JSON.stringify(rec.rawCall),
-          rec.callAt ?? null,
-        ],
+           analysis=EXCLUDED.analysis, scored_at=now()`,
+        [a.callId, rec.locationId, a.agentId ?? null, a.overallScore, a.summary, JSON.stringify(a)],
       );
       // Replace the flat KPI rows for this call.
       await client.query('DELETE FROM call_kpi WHERE call_id = $1', [a.callId]);
@@ -114,7 +114,9 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
 
   async get(callId: string): Promise<StoredCall | null> {
     const { rows } = await getPool().query(
-      `SELECT location_id, duration_sec, call_at, analysis, raw_call FROM call_analysis WHERE call_id = $1`,
+      `SELECT ca.location_id, ca.analysis, rc.duration_sec, rc.call_at, rc.payload
+         FROM call_analysis ca JOIN raw_call rc USING (call_id)
+        WHERE ca.call_id = $1`,
       [callId],
     );
     const row = rows[0];
@@ -124,25 +126,27 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
       locationId: row.location_id,
       durationSec: row.duration_sec ?? undefined,
       callAt: row.call_at ? new Date(row.call_at).toISOString() : undefined,
-      rawCall: row.raw_call,
+      rawCall: row.payload,
     };
   }
 
   async list(opts: { locationId: string; agentId?: string; limit?: number }): Promise<CallSummary[]> {
     const params: unknown[] = [opts.locationId];
-    let where = 'location_id = $1';
+    let where = 'ca.location_id = $1';
     if (opts.agentId === UNASSIGNED_AGENT) {
-      where += ' AND agent_id IS NULL';
+      where += ' AND ca.agent_id IS NULL';
     } else if (opts.agentId) {
       params.push(opts.agentId);
-      where += ` AND agent_id = $${params.length}`;
+      where += ` AND ca.agent_id = $${params.length}`;
     }
     params.push(Math.min(opts.limit ?? 100, 500));
+    // Duration + timing live on raw_call; join for them and order by call time.
     const { rows } = await getPool().query(
-      `SELECT call_id, agent_id, overall_score, summary, duration_sec, call_at
-         FROM call_analysis WHERE ${where}
-         ORDER BY call_at DESC NULLS LAST, scored_at DESC
-         LIMIT $${params.length}`,
+      `SELECT ca.call_id, ca.agent_id, ca.overall_score, ca.summary, rc.duration_sec, rc.call_at
+         FROM call_analysis ca JOIN raw_call rc USING (call_id)
+        WHERE ${where}
+        ORDER BY rc.call_at DESC NULLS LAST, ca.scored_at DESC
+        LIMIT $${params.length}`,
       params,
     );
     return rows.map((r) => ({
@@ -157,18 +161,19 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
 
   async recentAnalyses(opts: { locationId: string; agentId?: string; limit?: number }): Promise<CallAnalysis[]> {
     const params: unknown[] = [opts.locationId];
-    let where = 'location_id = $1';
+    let where = 'ca.location_id = $1';
     if (opts.agentId === UNASSIGNED_AGENT) {
-      where += ' AND agent_id IS NULL';
+      where += ' AND ca.agent_id IS NULL';
     } else if (opts.agentId) {
       params.push(opts.agentId);
-      where += ` AND agent_id = $${params.length}`;
+      where += ` AND ca.agent_id = $${params.length}`;
     }
     params.push(Math.min(opts.limit ?? 50, 200));
     const { rows } = await getPool().query(
-      `SELECT analysis FROM call_analysis WHERE ${where}
-         ORDER BY call_at DESC NULLS LAST, scored_at DESC
-         LIMIT $${params.length}`,
+      `SELECT ca.analysis FROM call_analysis ca JOIN raw_call rc USING (call_id)
+        WHERE ${where}
+        ORDER BY rc.call_at DESC NULLS LAST, ca.scored_at DESC
+        LIMIT $${params.length}`,
       params,
     );
     return rows.map((r) => r.analysis as CallAnalysis);

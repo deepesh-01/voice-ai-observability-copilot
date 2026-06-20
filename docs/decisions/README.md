@@ -19,6 +19,10 @@ Format: lightweight [MADR](https://adr.github.io/madr/). Use [`ADR-template.md`]
 | [ADR-0007](./0007-session-lifecycle-automation.md) | Session lifecycle automation (start ritual, /end-session, state, exit safety net) | Accepted | C2, D3, E4 | 2026-06-19 |
 | [ADR-0008](./0008-persistence-postgres-and-ingestion.md) | Persistence on Postgres + JSONB; poll + webhook ingestion | Accepted (supersedes ADR-0002 storage) | R2.1, R2.3, R2.4, E2 | 2026-06-19 |
 | [ADR-0009](./0009-dashboard-css-bars-no-charting-lib.md) | Dashboard KPI viz via CSS bars, no charting library | Accepted (closes ADR-0002 charting sub-decision) | R2.4, E1, E4 | 2026-06-19 |
+| [ADR-0010](./0010-lead-and-booking-data-model.md) | Lead & booking data model + LLM extraction + booking-approval policy | Accepted (approval workflow superseded by ADR-0012) | R2.6, R2.2, R2.3, E2 | 2026-06-20 |
+| [ADR-0011](./0011-normalize-raw-call-source-of-record.md) | Normalize raw_call into its own source-of-record table | Accepted (refines ADR-0008 schema) | R2.1, E2, E3 | 2026-06-20 |
+| [ADR-0012](./0012-lead-signals-not-approval-workflow.md) | Lead data as observability signals, not a booking-approval workflow | Accepted (supersedes ADR-0010 approval workflow) | R2.3, R2.6, E2 | 2026-06-20 |
+| [ADR-0013](./0013-hybrid-lead-facts-native-over-llm.md) | Hybrid lead facts — native extractedData over LLM inference | Accepted | R2.1, R2.2, E2, E3 | 2026-06-20 |
 
 ## Statuses
 

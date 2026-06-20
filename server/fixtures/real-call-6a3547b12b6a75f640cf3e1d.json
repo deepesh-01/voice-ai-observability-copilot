@@ -1,0 +1,15 @@
+{
+  "contactId": "uJTXf5GbFynDMPPrD16K",
+  "createdAt": "2026-06-19T13:44:17.882Z",
+  "duration": 116,
+  "agentId": "6a35206c88ba8e0f1c707f02",
+  "isAgentDeleted": false,
+  "summary": "The user called BrightSmile Dental to inquire about an appointment due to severe tooth pain from cavities. The agent scheduled an appointment for Saturday, June 20th, at 9 AM and confirmed the user's contact details. The user was satisfied with the arrangements and the call ended positively.",
+  "transcript": "bot:Thanks for calling BrightSmile Dental! This is Jessica. Are you looking to book an appointment, or is there something else I can help with?\nhuman:I have some people cavities due to which I'm having severe tooth pain. So I wanted to inquire if I can come in and get it checked. \nbot:Got it, tooth pain can be tough. Let’s get you scheduled for a visit so we can take care of that. Can I start with your full name, please?\nhuman:Yeah. My full name is Dipesh Rathore. \nbot:Thanks, Dipesh. Now, do you have a preferred day and time for the appointment, or should I check what’s available?\nhuman:Let me know what's the latest available time and when is the earliest that I can come in. \nbot:Alright, let me check. The earliest available slot is tomorrow, Saturday, June 20th, at nine AM. The latest available time is next Friday, June 26th, at six PM. Which one works better for you?\nhuman:Saturday. \nbot:Got it. So, Saturday, June 20th, at nine AM. Can I have the best phone number to reach you?\nhuman:Yeah. Seven nine eight seven two one five seven two eight. \nbot:Thanks! And could you share your email address for the appointment confirmation?\nhuman:Is it necessary or phone number is fine? \nbot:The phone number is fine for confirmation, Dipesh. No worries! Let me quickly confirm everything with you. appointment is scheduled for Saturday, June 20th, at nine AM. It's for tooth pain due to cavities. The contact number I have is seven nine eight seven two one five seven two eight. Does that all look correct?\nhuman:Yeah. \nbot:Perfect! Your appointment is all set for Saturday, June 20th, at nine AM. You'll get a confirmation by text shortly. Take care, Dipesh, and we’ll see you then!\nhuman:Thank you. \nbot:You're welcome, Dipesh! Have a great day, and we'll see you on Saturday!\n",
+  "translation": null,
+  "extractedData": {},
+  "trialCall": true,
+  "id": "6a3547b12b6a75f640cf3e1d",
+  "executedCallActions": [],
+  "traceId": "b567e92a-b68a-45d0-a92b-faa1c94961a0"
+}

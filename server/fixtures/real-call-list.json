@@ -2,6 +2,572 @@
   "callLogs": [
     {
       "contactId": "uJTXf5GbFynDMPPrD16K",
+      "createdAt": "2026-06-20T13:53:16.955Z",
+      "duration": 128,
+      "agentId": "6a35206c88ba8e0f1c707f02",
+      "isAgentDeleted": false,
+      "summary": "The user, Dipesh Rathur, called to book a teeth cleaning appointment. The agent scheduled the appointment for June 22, 2026, at 11:00 AM and provided pricing information. The user confirmed the details and was satisfied with the call.",
+      "transcript": "bot:Thanks for calling BrightSmile Dental, this is Jessica. How can I help you today — are you looking to book an appointment, or do you have a question about our services?\nhuman:Wanted to book for teeth cleaning. \nbot:Got it! Let’s get that scheduled for you. Can I have your full name, please?\nhuman:Yeah. My name is Dipesh. \nbot:Thanks, Dipesh. Could you also share your last name?\nhuman:Yeah. It's the Dakesh, Rathur. \nbot:Thanks, Dipesh Rathur. Do you have a preferred day and time for your teeth cleaning, or should I share some available options?\nhuman:Give me some latest available of I want to book for a most recent \nbot:The soonest available would be Monday, June 22nd. We have slots between 9:00 AM and 6:00 PM. Would you like me to check a specific time for that day?\nhuman:Can you book is eleven AM sort of label? \nbot:Sure, I can book you for Monday, June 22nd, at eleven AM. Could you share your best contact number or email for the appointment confirmation?\nhuman:Yeah. Here's my phone number. Seven nine eight seven two one five seven two eight. \nbot:Got it. So, I have you booked for a teeth cleaning on Monday, June 22nd, at eleven AM. Your contact number is seven nine eight seven two one five seven two eight. Does everything look correct?\nhuman:Yeah. Can you just tell me about the pricing? \nbot:Of course! Teeth cleaning typically ranges from seventy-five to two hundred dollars for self-pay patients. The exact cost depends on the dentist's assessment during your visit. If you have insurance, preventive care like cleanings is often covered at one hundred percent in-network. Let me know if you’d like me to clarify anything else!\nhuman:No. That's it. \nbot:Alright, Dipesh, you're all set for Monday, June 22nd, at eleven AM. You'll get a confirmation text shortly.Have a great day, and we’ll see you then!\nhuman:Thank you. \nbot:You're very welcome! Take care, and we'll see you soon.\n",
+      "transcriptWithToolCalls": [
+        {
+          "role": "agent",
+          "content": "Thanks for calling BrightSmile Dental, this is Jessica. How can I help you today — are you looking to book an appointment, or do you have a question about our services?",
+          "startTime": 0.254,
+          "endTime": 7.568
+        },
+        {
+          "role": "user",
+          "content": "Wanted to book for teeth cleaning. ",
+          "startTime": 10.898000999999999,
+          "endTime": 12.898
+        },
+        {
+          "role": "agent",
+          "content": "Got it! Let’s get that scheduled for you. Can I have your full name, please?",
+          "startTime": 13.58,
+          "endTime": 17.26
+        },
+        {
+          "role": "user",
+          "content": "Yeah. My name is Dipesh. ",
+          "startTime": 18.668,
+          "endTime": 20.268
+        },
+        {
+          "role": "agent",
+          "content": "Thanks, Dipesh. Could you also share your last name?",
+          "startTime": 21.14,
+          "endTime": 23.764
+        },
+        {
+          "role": "user",
+          "content": "Yeah. It's the Dakesh, Rathur. ",
+          "startTime": 25.988,
+          "endTime": 27.907999999999998
+        },
+        {
+          "role": "agent",
+          "content": "Thanks, Dipesh Rathur. Do you have a preferred day and time for your teeth cleaning, or should I share some available options?",
+          "startTime": 29.043,
+          "endTime": 35.022
+        },
+        {
+          "role": "user",
+          "content": "Give me some latest available of I want to book for a most recent ",
+          "startTime": 36.687997,
+          "endTime": 41.298
+        },
+        {
+          "role": "agent",
+          "content": "The soonest available would be Monday, June 22nd. We have slots between 9:00 AM and 6:00 PM. Would you like me to check a specific time for that day?",
+          "startTime": 44.63,
+          "endTime": 53.081
+        },
+        {
+          "role": "user",
+          "content": "Can you book is eleven AM sort of label? ",
+          "startTime": 54.668000000000006,
+          "endTime": 58.828
+        },
+        {
+          "role": "agent",
+          "content": "Sure, I can book you for Monday, June 22nd, at eleven AM. Could you share your best contact number or email for the appointment confirmation?",
+          "startTime": 59.686,
+          "endTime": 66.953
+        },
+        {
+          "role": "user",
+          "content": "Yeah. Here's my phone number. Seven nine eight seven two one five seven two eight. ",
+          "startTime": 68.388,
+          "endTime": 76.408
+        },
+        {
+          "role": "agent",
+          "content": "Got it. So, I have you booked for a teeth cleaning on Monday, June 22nd, at eleven AM. Your contact number is seven nine eight seven two one five seven two eight. Does everything look correct?",
+          "startTime": 77.308,
+          "endTime": 87.56
+        },
+        {
+          "role": "user",
+          "content": "Yeah. Can you just tell me about the pricing? ",
+          "startTime": 89.078,
+          "endTime": 92.22800000000001
+        },
+        {
+          "role": "agent",
+          "content": "Of course! Teeth cleaning typically ranges from seventy-five to two hundred dollars for self-pay patients. The exact cost depends on the dentist's assessment during your visit. If you have insurance, preventive care like cleanings is often covered at one hundred percent in-network. Let me know if you’d like me to clarify anything else!",
+          "startTime": 93.775,
+          "endTime": 110.644
+        },
+        {
+          "role": "user",
+          "content": "No. That's it. ",
+          "startTime": 112.938,
+          "endTime": 113.738
+        },
+        {
+          "role": "agent",
+          "content": "Alright, Dipesh, you're all set for Monday, June 22nd, at eleven AM. You'll get a confirmation text shortly.Have a great day, and we’ll see you then!",
+          "startTime": 114.742,
+          "endTime": 122.079
+        },
+        {
+          "role": "user",
+          "content": "Thank you. ",
+          "startTime": 123.798,
+          "endTime": 124.19800000000001
+        },
+        {
+          "role": "agent",
+          "content": "You're very welcome! Take care, and we'll see you soon.",
+          "startTime": 125.096,
+          "endTime": 127.732
+        },
+        {
+          "role": "action_executed",
+          "toolName": "end_call",
+          "toolCallId": "57c67771d8a0799f",
+          "toolType": "end_call",
+          "toolArguments": {
+            "executionMessage": "You're very welcome! Take care, and we'll see you soon."
+          },
+          "startTime": 127.899
+        }
+      ],
+      "translation": null,
+      "extractedData": {
+        "name": "Dipesh",
+        "Last Name": "Rathur",
+        "email": null,
+        "Phone": "+17987215728",
+        "Chief Complaint": null,
+        "Treatment Interest": "Teeth cleaning",
+        "DateTimeOfBooking": "Jun 22 2026 11:00",
+        "bookingInterest": "Booked",
+        "IsHuamnHandover": null
+      },
+      "trialCall": true,
+      "id": "6a369b4c88ba8ee6fc70edfc",
+      "executedCallActions": []
+    },
+    {
+      "contactId": "uJTXf5GbFynDMPPrD16K",
+      "createdAt": "2026-06-19T13:44:17.882Z",
+      "duration": 116,
+      "agentId": "6a35206c88ba8e0f1c707f02",
+      "isAgentDeleted": false,
+      "summary": "The user called BrightSmile Dental to inquire about an appointment due to severe tooth pain from cavities. The agent scheduled an appointment for Saturday, June 20th, at 9 AM and confirmed the user's contact details. The user was satisfied with the arrangements and the call ended positively.",
+      "transcript": "bot:Thanks for calling BrightSmile Dental! This is Jessica. Are you looking to book an appointment, or is there something else I can help with?\nhuman:I have some people cavities due to which I'm having severe tooth pain. So I wanted to inquire if I can come in and get it checked. \nbot:Got it, tooth pain can be tough. Let’s get you scheduled for a visit so we can take care of that. Can I start with your full name, please?\nhuman:Yeah. My full name is Dipesh Rathore. \nbot:Thanks, Dipesh. Now, do you have a preferred day and time for the appointment, or should I check what’s available?\nhuman:Let me know what's the latest available time and when is the earliest that I can come in. \nbot:Alright, let me check. The earliest available slot is tomorrow, Saturday, June 20th, at nine AM. The latest available time is next Friday, June 26th, at six PM. Which one works better for you?\nhuman:Saturday. \nbot:Got it. So, Saturday, June 20th, at nine AM. Can I have the best phone number to reach you?\nhuman:Yeah. Seven nine eight seven two one five seven two eight. \nbot:Thanks! And could you share your email address for the appointment confirmation?\nhuman:Is it necessary or phone number is fine? \nbot:The phone number is fine for confirmation, Dipesh. No worries! Let me quickly confirm everything with you. appointment is scheduled for Saturday, June 20th, at nine AM. It's for tooth pain due to cavities. The contact number I have is seven nine eight seven two one five seven two eight. Does that all look correct?\nhuman:Yeah. \nbot:Perfect! Your appointment is all set for Saturday, June 20th, at nine AM. You'll get a confirmation by text shortly. Take care, Dipesh, and we’ll see you then!\nhuman:Thank you. \nbot:You're welcome, Dipesh! Have a great day, and we'll see you on Saturday!\n",
+      "transcriptWithToolCalls": [
+        {
+          "role": "agent",
+          "content": "Thanks for calling BrightSmile Dental! This is Jessica. Are you looking to book an appointment, or is there something else I can help with?",
+          "startTime": 0.229,
+          "endTime": 6.046
+        },
+        {
+          "role": "user",
+          "content": "I have some people cavities due to which I'm having severe tooth pain. So I wanted to inquire if I can come in and get it checked. ",
+          "startTime": 8.607,
+          "endTime": 17.217
+        },
+        {
+          "role": "agent",
+          "content": "Got it, tooth pain can be tough. Let’s get you scheduled for a visit so we can take care of that. Can I start with your full name, please?",
+          "startTime": 21.525,
+          "endTime": 27.482
+        },
+        {
+          "role": "user",
+          "content": "Yeah. My full name is Dipesh Rathore. ",
+          "startTime": 29.177,
+          "endTime": 31.737000000000002
+        },
+        {
+          "role": "agent",
+          "content": "Thanks, Dipesh. Now, do you have a preferred day and time for the appointment, or should I check what’s available?",
+          "startTime": 32.807,
+          "endTime": 37.985
+        },
+        {
+          "role": "user",
+          "content": "Let me know what's the latest available time and when is the earliest that I can come in. ",
+          "startTime": 39.367,
+          "endTime": 44.077
+        },
+        {
+          "role": "agent",
+          "content": "Alright, let me check. The earliest available slot is tomorrow, Saturday, June 20th, at nine AM. The latest available time is next Friday, June 26th, at six PM. Which one works better for you?",
+          "startTime": 45.202,
+          "endTime": 56.244
+        },
+        {
+          "role": "user",
+          "content": "Saturday. ",
+          "startTime": 57.077,
+          "endTime": 57.717
+        },
+        {
+          "role": "agent",
+          "content": "Got it. So, Saturday, June 20th, at nine AM. Can I have the best phone number to reach you?",
+          "startTime": 59.17,
+          "endTime": 64.023
+        },
+        {
+          "role": "user",
+          "content": "Yeah. Seven nine eight seven two one five seven two eight. ",
+          "startTime": 65.897,
+          "endTime": 72.187
+        },
+        {
+          "role": "agent",
+          "content": "Thanks! And could you share your email address for the appointment confirmation?",
+          "startTime": 73.24,
+          "endTime": 77.083
+        },
+        {
+          "role": "user",
+          "content": "Is it necessary or phone number is fine? ",
+          "startTime": 77.88699600000001,
+          "endTime": 80.047
+        },
+        {
+          "role": "agent",
+          "content": "The phone number is fine for confirmation, Dipesh. No worries! Let me quickly confirm everything with you. appointment is scheduled for Saturday, June 20th, at nine AM. It's for tooth pain due to cavities. The contact number I have is seven nine eight seven two one five seven two eight. Does that all look correct?",
+          "startTime": 81.947,
+          "endTime": 98.166
+        },
+        {
+          "role": "user",
+          "content": "Yeah. ",
+          "startTime": 99.166995,
+          "endTime": 99.40700000000001
+        },
+        {
+          "role": "agent",
+          "content": "Perfect! Your appointment is all set for Saturday, June 20th, at nine AM. You'll get a confirmation by text shortly. Take care, Dipesh, and we’ll see you then!",
+          "startTime": 100.529,
+          "endTime": 109.028
+        },
+        {
+          "role": "user",
+          "content": "Thank you. ",
+          "startTime": 109.837,
+          "endTime": 110.23700000000001
+        },
+        {
+          "role": "agent",
+          "content": "You're welcome, Dipesh! Have a great day, and we'll see you on Saturday!",
+          "startTime": 111.809,
+          "endTime": 115.339
+        },
+        {
+          "role": "action_executed",
+          "toolName": "end_call",
+          "toolCallId": "9976543be0f55159",
+          "toolType": "end_call",
+          "toolArguments": {
+            "executionMessage": "You're welcome, Dipesh! Have a great day, and we'll see you on Saturday!"
+          },
+          "startTime": 115.513
+        }
+      ],
+      "translation": null,
+      "extractedData": {},
+      "trialCall": true,
+      "id": "6a3547b12b6a75f640cf3e1d",
+      "executedCallActions": []
+    },
+    {
+      "contactId": "uJTXf5GbFynDMPPrD16K",
+      "createdAt": "2026-06-19T12:01:01.732Z",
+      "duration": 99,
+      "agentId": "6a35206c88ba8e0f1c707f02",
+      "isAgentDeleted": false,
+      "summary": "The user inquired about treatment for micro fractures in teeth and expressed interest in consulting a dentist for advice. The agent offered to schedule an appointment and arranged for the dental team to follow up with the user, collecting the user's name and phone number for contact. The call ended with confirmation that the team would reach out to the user soon.",
+      "transcript": "bot:Thanks for calling BrightSmile Dental! This is Jessica. Are you looking to book an appointment, or is there something else I can help with?\nhuman:Do you help with micro fractures in the front side of teeth? \nbot:That’s a great question! I’m not a clinical expert, but our dental team does handle a variety of concerns, including cosmetic and restorative treatments. I’d recommend booking an appointment so the dentist can assess the micro fractures and suggest the best solution. Would you like me to help schedule that for you?\nhuman:No. That's it for now. But it would be great if I could talk to a dentist who could give me some real advice, and then I would like to go for consultation. \nbot:Got it! I’ll make a note for our team to follow up with you. They’ll connect you with a dentist who can provide advice and guide you on the next steps. Could I take your name and phone number so they can reach out?\nhuman:Yeah. Sure. My name is Dipesh. How do I share my phone number with you? \nbot:Thanks, Dipesh! You can just share your phone number with me now, and I’ll make sure it’s passed along to the team for follow-up.\nhuman:Sure. Then listen up. Seven nine eight seven two one five seven two eight. \nbot:Got it. That’s seven nine eight seven two one five seven two eight, correct?\nhuman:Yep. \nbot:Perfect, Dipesh! I’ll have our team reach out to you soon. If there’s anything else you need, feel free to call back. Take care!\nhuman:Thank you. \nbot:You're welcome, Dipesh! Have a great day ahead.\n",
+      "transcriptWithToolCalls": [
+        {
+          "role": "agent",
+          "content": "Thanks for calling BrightSmile Dental! This is Jessica. Are you looking to book an appointment, or is there something else I can help with?",
+          "startTime": 0.239,
+          "endTime": 6.114
+        },
+        {
+          "role": "user",
+          "content": "Do you help with micro fractures in the front side of teeth? ",
+          "startTime": 8.545,
+          "endTime": 12.985
+        },
+        {
+          "role": "agent",
+          "content": "That’s a great question! I’m not a clinical expert, but our dental team does handle a variety of concerns, including cosmetic and restorative treatments. I’d recommend booking an appointment so the dentist can assess the micro fractures and suggest the best solution. Would you like me to help schedule that for you?",
+          "startTime": 13.682,
+          "endTime": 29.913
+        },
+        {
+          "role": "user",
+          "content": "No. That's it for now. But it would be great if I could talk to a dentist who could give me some real advice, and then I would like to go for consultation. ",
+          "startTime": 32.835,
+          "endTime": 42.705
+        },
+        {
+          "role": "agent",
+          "content": "Got it! I’ll make a note for our team to follow up with you. They’ll connect you with a dentist who can provide advice and guide you on the next steps. Could I take your name and phone number so they can reach out?",
+          "startTime": 44.047,
+          "endTime": 53.671
+        },
+        {
+          "role": "user",
+          "content": "Yeah. Sure. My name is Dipesh. How do I share my phone number with you? ",
+          "startTime": 54.894999999999996,
+          "endTime": 65.025
+        },
+        {
+          "role": "agent",
+          "content": "Thanks, Dipesh! You can just share your phone number with me now, and I’ll make sure it’s passed along to the team for follow-up.",
+          "startTime": 65.643,
+          "endTime": 71.576
+        },
+        {
+          "role": "user",
+          "content": "Sure. Then listen up. Seven nine eight seven two one five seven two eight. ",
+          "startTime": 73.255004,
+          "endTime": 79.744995
+        },
+        {
+          "role": "agent",
+          "content": "Got it. That’s seven nine eight seven two one five seven two eight, correct?",
+          "startTime": 80.496,
+          "endTime": 84.478
+        },
+        {
+          "role": "user",
+          "content": "Yep. ",
+          "startTime": 85.735,
+          "endTime": 87.095
+        },
+        {
+          "role": "agent",
+          "content": "Perfect, Dipesh! I’ll have our team reach out to you soon. If there’s anything else you need, feel free to call back. Take care!",
+          "startTime": 86.956,
+          "endTime": 93.922
+        },
+        {
+          "role": "user",
+          "content": "Thank you. ",
+          "startTime": 94.915,
+          "endTime": 95.395
+        },
+        {
+          "role": "agent",
+          "content": "You're welcome, Dipesh! Have a great day ahead.",
+          "startTime": 96.217,
+          "endTime": 98.702
+        },
+        {
+          "role": "action_executed",
+          "toolName": "end_call",
+          "toolCallId": "040685ef0fa57414",
+          "toolType": "end_call",
+          "toolArguments": {
+            "executionMessage": "You're welcome, Dipesh! Have a great day ahead."
+          },
+          "startTime": 98.837
+        }
+      ],
+      "translation": null,
+      "extractedData": {},
+      "trialCall": true,
+      "id": "6a352f7de5a07a34e61b2f82",
+      "executedCallActions": []
+    },
+    {
+      "contactId": "uJTXf5GbFynDMPPrD16K",
+      "createdAt": "2026-06-19T11:57:56.329Z",
+      "duration": 171,
+      "agentId": "6a35206c88ba8e0f1c707f02",
+      "isAgentDeleted": false,
+      "summary": "The user inquired about dental implants and was informed that the clinic provides implants including for back teeth, with pricing dependent on individual treatment plans. The user booked a consultation appointment for implants on Saturday, June 20th, at 10 AM, providing their name and phone number, and opted to receive appointment details via phone rather than email.",
+      "transcript": "bot:Thanks for calling BrightSmile Dental! This is Jessica. Are you looking to book an appointment, or is there something else I can help with?\nhuman:I wanted to inquire about implants. \nbot:Got it. While I can't provide clinical advice, I can have one of our team members follow up with you to discuss implants in detail. Would you like me to arrange that for you?\nhuman:I wanted to know if you provide implants or not if yes, what would be the estimated price for, like, backside teeth? \nbot:Yes, we do provide dental implants, including for back teeth. However, the exact pricing can vary depending on your specific needs and the treatment plan. I’d recommend scheduling a consultation with our dentist to get a detailed estimate and discuss your options. Would you like to book an appointment for that?\nhuman:Yeah. Sure. \nbot:Great! Can I get your full name to start the booking?\nhuman:Yeah. \nhuman:Dipesh. \nbot:Thanks, Dipesh. What's the reason for your visit—should I note it as a consultation for implants?\nhuman:Yes. \nbot:Alright, a consultation for implants. Do you have a preferred day and time for the appointment?If you're unsure, I can suggest some options.\nhuman:Please give me some latest options. \nhuman:I want to come in as early I can. \nbot:Got it. The earliest options we have are tomorrow, Saturday, June 20th, at 10 AM or Monday, June 22nd, at 11 AM. Would either of these work for you?\nhuman:Saturday. \nbot:Perfect. I've noted Saturday, June 20th, at 10 AM. Could you share the best phone number to reach you?\nhuman:Yeah. Sure. Should I spell it? \nbot:No need to spell it—just share the number, and I'll note it down for you.\nhuman:Yeah. Seven nine eight seven two one five seven two eight. \nbot:Got it. Seven nine eight seven two one five seven two eight. Could you also provide your email address for the appointment confirmation?\nhuman:Is the email necessary or we or you can share details in phone? \nbot:We can share the details over the phone if that's more convenient for you. Would you prefer that?\nhuman:Yeah. \nbot:Alright, I'll make sure the details are shared with you over the phone. Let me confirm everything: your name is Dipesh, you're booking a consultation for implants on Saturday, June 20th, at 10 AM, and your phone number is seven nine eight seven two one five seven two eight. Does that all look correct?\nhuman:Yeah. \nhuman:Yeah. \nbot:Great! Your appointment is all set for Saturday, June 20th, at 10 AM. We'll give you a call if there are any updates. Thanks for choosing BrightSmile Dental, and we’ll see you soon!Have a great day!\n",
+      "transcriptWithToolCalls": [
+        {
+          "role": "agent",
+          "content": "Thanks for calling BrightSmile Dental! This is Jessica. Are you looking to book an appointment, or is there something else I can help with?",
+          "startTime": 0.23,
+          "endTime": 6.093
+        },
+        {
+          "role": "user",
+          "content": "I wanted to inquire about implants. ",
+          "startTime": 9.036999999999999,
+          "endTime": 11.597
+        },
+        {
+          "role": "agent",
+          "content": "Got it. While I can't provide clinical advice, I can have one of our team members follow up with you to discuss implants in detail. Would you like me to arrange that for you?",
+          "startTime": 12.607,
+          "endTime": 21.209
+        },
+        {
+          "role": "user",
+          "content": "I wanted to know if you provide implants or not if yes, what would be the estimated price for, like, backside teeth? ",
+          "startTime": 23.247,
+          "endTime": 32.827
+        },
+        {
+          "role": "agent",
+          "content": "Yes, we do provide dental implants, including for back teeth. However, the exact pricing can vary depending on your specific needs and the treatment plan. I’d recommend scheduling a consultation with our dentist to get a detailed estimate and discuss your options. Would you like to book an appointment for that?",
+          "startTime": 34.554,
+          "endTime": 50.342
+        },
+        {
+          "role": "user",
+          "content": "Yeah. Sure. ",
+          "startTime": 51.617003000000004,
+          "endTime": 52.337
+        },
+        {
+          "role": "agent",
+          "content": "Great! Can I get your full name to start the booking?",
+          "startTime": 53.189,
+          "endTime": 55.569
+        },
+        {
+          "role": "user",
+          "content": "Yeah. ",
+          "startTime": 57.047000000000004,
+          "endTime": 57.446997
+        },
+        {
+          "role": "user",
+          "content": "Dipesh. ",
+          "startTime": 60.707,
+          "endTime": 61.267
+        },
+        {
+          "role": "agent",
+          "content": "Thanks, Dipesh. What's the reason for your visit—should I note it as a consultation for implants?",
+          "startTime": 62.471,
+          "endTime": 67.44
+        },
+        {
+          "role": "user",
+          "content": "Yes. ",
+          "startTime": 68.757,
+          "endTime": 68.997
+        },
+        {
+          "role": "agent",
+          "content": "Alright, a consultation for implants. Do you have a preferred day and time for the appointment?If you're unsure, I can suggest some options.",
+          "startTime": 69.817,
+          "endTime": 75.715
+        },
+        {
+          "role": "user",
+          "content": "Please give me some latest options. ",
+          "startTime": 78.31700000000001,
+          "endTime": 81.417
+        },
+        {
+          "role": "user",
+          "content": "I want to come in as early I can. ",
+          "startTime": 81.577,
+          "endTime": 83.177004
+        },
+        {
+          "role": "agent",
+          "content": "Got it. The earliest options we have are tomorrow, Saturday, June 20th, at 10 AM or Monday, June 22nd, at 11 AM. Would either of these work for you?",
+          "startTime": 83.994,
+          "endTime": 92.667
+        },
+        {
+          "role": "user",
+          "content": "Saturday. ",
+          "startTime": 93.727,
+          "endTime": 94.206995
+        },
+        {
+          "role": "agent",
+          "content": "Perfect. I've noted Saturday, June 20th, at 10 AM. Could you share the best phone number to reach you?",
+          "startTime": 95.514,
+          "endTime": 100.739
+        },
+        {
+          "role": "user",
+          "content": "Yeah. Sure. Should I spell it? ",
+          "startTime": 102.76700000000001,
+          "endTime": 104.927004
+        },
+        {
+          "role": "agent",
+          "content": "No need to spell it—just share the number, and I'll note it down for you.",
+          "startTime": 106.364,
+          "endTime": 109.255
+        },
+        {
+          "role": "user",
+          "content": "Yeah. Seven nine eight seven two one five seven two eight. ",
+          "startTime": 111.337,
+          "endTime": 117.897
+        },
+        {
+          "role": "agent",
+          "content": "Got it. Seven nine eight seven two one five seven two eight. Could you also provide your email address for the appointment confirmation?",
+          "startTime": 118.615,
+          "endTime": 125.499
+        },
+        {
+          "role": "user",
+          "content": "Is the email necessary or we or you can share details in phone? ",
+          "startTime": 127.066996,
+          "endTime": 131.74698999999998
+        },
+        {
+          "role": "agent",
+          "content": "We can share the details over the phone if that's more convenient for you. Would you prefer that?",
+          "startTime": 132.883,
+          "endTime": 136.936
+        },
+        {
+          "role": "user",
+          "content": "Yeah. ",
+          "startTime": 138.117,
+          "endTime": 138.75699999999998
+        },
+        {
+          "role": "agent",
+          "content": "Alright, I'll make sure the details are shared with you over the phone. Let me confirm everything: your name is Dipesh, you're booking a consultation for implants on Saturday, June 20th, at 10 AM, and your phone number is seven nine eight seven two one five seven two eight. Does that all look correct?",
+          "startTime": 140.231,
+          "endTime": 154.814
+        },
+        {
+          "role": "user",
+          "content": "Yeah. ",
+          "startTime": 155.43699999999998,
+          "endTime": 155.677
+        },
+        {
+          "role": "user",
+          "content": "Yeah. ",
+          "startTime": 156.53699999999998,
+          "endTime": 156.85699
+        },
+        {
+          "role": "agent",
+          "content": "Great! Your appointment is all set for Saturday, June 20th, at 10 AM. We'll give you a call if there are any updates. Thanks for choosing BrightSmile Dental, and we’ll see you soon!Have a great day!",
+          "startTime": 157.986,
+          "endTime": 168.086
+        }
+      ],
+      "translation": null,
+      "extractedData": {},
+      "trialCall": true,
+      "id": "6a352ec488ba8e1d0870822f",
+      "executedCallActions": []
+    },
+    {
+      "contactId": "uJTXf5GbFynDMPPrD16K",
       "createdAt": "2026-06-19T11:15:43.564Z",
       "duration": 123,
       "agentId": "6a35206c88ba8e0f1c707f02",
@@ -163,8 +729,8 @@
       "executedCallActions": []
     }
   ],
-  "total": 2,
+  "total": 6,
   "page": 1,
   "pageSize": 10,
-  "traceId": "407b87a8-faf9-4e8c-b8d1-a1f8f7cfe1bc"
+  "traceId": "fcdef664-62b5-43db-a1dd-eb03fd20e04c"
 }

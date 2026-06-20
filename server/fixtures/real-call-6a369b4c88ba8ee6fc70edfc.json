@@ -1,0 +1,25 @@
+{
+  "contactId": "uJTXf5GbFynDMPPrD16K",
+  "createdAt": "2026-06-20T13:53:16.955Z",
+  "duration": 128,
+  "agentId": "6a35206c88ba8e0f1c707f02",
+  "isAgentDeleted": false,
+  "summary": "The user, Dipesh Rathur, called to book a teeth cleaning appointment. The agent scheduled the appointment for June 22, 2026, at 11:00 AM and provided pricing information. The user confirmed the details and was satisfied with the call.",
+  "transcript": "bot:Thanks for calling BrightSmile Dental, this is Jessica. How can I help you today — are you looking to book an appointment, or do you have a question about our services?\nhuman:Wanted to book for teeth cleaning. \nbot:Got it! Let’s get that scheduled for you. Can I have your full name, please?\nhuman:Yeah. My name is Dipesh. \nbot:Thanks, Dipesh. Could you also share your last name?\nhuman:Yeah. It's the Dakesh, Rathur. \nbot:Thanks, Dipesh Rathur. Do you have a preferred day and time for your teeth cleaning, or should I share some available options?\nhuman:Give me some latest available of I want to book for a most recent \nbot:The soonest available would be Monday, June 22nd. We have slots between 9:00 AM and 6:00 PM. Would you like me to check a specific time for that day?\nhuman:Can you book is eleven AM sort of label? \nbot:Sure, I can book you for Monday, June 22nd, at eleven AM. Could you share your best contact number or email for the appointment confirmation?\nhuman:Yeah. Here's my phone number. Seven nine eight seven two one five seven two eight. \nbot:Got it. So, I have you booked for a teeth cleaning on Monday, June 22nd, at eleven AM. Your contact number is seven nine eight seven two one five seven two eight. Does everything look correct?\nhuman:Yeah. Can you just tell me about the pricing? \nbot:Of course! Teeth cleaning typically ranges from seventy-five to two hundred dollars for self-pay patients. The exact cost depends on the dentist's assessment during your visit. If you have insurance, preventive care like cleanings is often covered at one hundred percent in-network. Let me know if you’d like me to clarify anything else!\nhuman:No. That's it. \nbot:Alright, Dipesh, you're all set for Monday, June 22nd, at eleven AM. You'll get a confirmation text shortly.Have a great day, and we’ll see you then!\nhuman:Thank you. \nbot:You're very welcome! Take care, and we'll see you soon.\n",
+  "translation": null,
+  "extractedData": {
+    "name": "Dipesh",
+    "Last Name": "Rathur",
+    "email": null,
+    "Phone": "+17987215728",
+    "Chief Complaint": null,
+    "Treatment Interest": "Teeth cleaning",
+    "DateTimeOfBooking": "Jun 22 2026 11:00",
+    "bookingInterest": "Booked",
+    "IsHuamnHandover": null
+  },
+  "trialCall": true,
+  "id": "6a369b4c88ba8ee6fc70edfc",
+  "executedCallActions": [],
+  "traceId": "c4382da0-c97d-41bc-8638-771e4e4a2521"
+}

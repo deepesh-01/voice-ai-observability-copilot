@@ -1,0 +1,51 @@
+{
+  "headers": {
+    "host": "voai.deepesh-engg.in",
+    "user-agent": "axios/0.21.4",
+    "content-length": "4011",
+    "accept": "application/json, text/plain, */*",
+    "accept-encoding": "gzip, br",
+    "cdn-loop": "cloudflare; loops=1",
+    "cf-connecting-ip": "34.67.138.91",
+    "cf-ipcountry": "US",
+    "cf-ray": "a0eb5c116fa8edc5-ORD",
+    "cf-visitor": "{\"scheme\":\"https\"}",
+    "cf-warp-tag-id": "fe11b46c-21bf-4f73-af79-ad7c2b5a2120",
+    "connection": "keep-alive",
+    "content-type": "application/json",
+    "traceparent": "00-19a65060acbeda15db83daddd0fd294f-6d81ee646424a74e-00",
+    "x-forwarded-for": "34.67.138.91",
+    "x-forwarded-proto": "https",
+    "x-ghl-signature": "3NNoIwJhP73O+M08rBz8jId+W1iegJRxXlTEzFNMSunZZgcqCx/ViemLCgfYyWR0OUUGQLAPl8COp1xCYVGKDA==",
+    "x-wh-signature": "VIMwQYteWoNcIoPEfov84POWUb1p67FWpsogZEWnytboIZOkMoetJCl4lhH6AFYmoa+xeYRH40rOH+0nneCa6FzzV77BEPvom6CRkC8p6IQRcIo5RsWHaHXULaVDkcIeyBBEzMnjgpHJjw1XsrlWNq7kvt2Qid7BE4JtlzBk5QaPsNVatxiwAHOBP2wAqec5JyDwi4znVV/9XKFT5gBUNfQKFP3Gud7wpvWEnV2yrpGfrhFO79S8MoRdVfFXaLysz727j6ekXZKbAGjX8XmW3hTnZVk7xuCQ2p9yIH/GlUGLZ3IbRZ+3/YqKO6UtpGc1jMSFk4jtc4qtm/AX9UzOqIrvdJJBmTzWKxhLJMjSTDhRuoa/nP3qjwg8Xp7Xk/wTcU+pJv/avOjJLXH99ZVcVhI8QQZ2KVohaLSHTIOf401og5eNxGj3b3M0z60BB15/47vJxFW7oSZEPQ/BDOGsScLY1xbLLj3yAS82rdsaTK2yAplgMQsOS55FMoP4vXFMGluGXGYmdrFR+m2B8kpvkit618aToTRfLQ5Dt9Ld4e53Og/a57uRaTGfLrqlXmOZzgLBe457TX2Q73ieRh1V4FKcBw6yH6Lrd9kRH/W4/d/3B5jtdEXQmpj0s2eT6Cz+g5U1rZ6dNsk1/rqBwCIQTf148cnw4lT6aVMo0eCfRSk="
+  },
+  "body": {
+    "type": "VoiceAiCallEnd",
+    "locationId": "B7TzvBb6H6QvDNdEEhlt",
+    "versionId": "6a344e6ddd3d8c9f262936f5",
+    "appId": "6a341c086a3eceb7ad2e99f9",
+    "id": "6a369ec2902ec6f093ef7ca3",
+    "contactId": "uJTXf5GbFynDMPPrD16K",
+    "createdAt": "2026-06-20T14:08:02.826Z",
+    "duration": 167,
+    "executedCallActions": [],
+    "agentId": "6a35206c88ba8e0f1c707f02",
+    "summary": "The user, Dibesh Rathore, called to book a deep cleaning and root canal treatment as advised by a clinic consultation. The agent provided available appointment slots, pricing details, and insurance coverage information, including network status for Humana and Cigna. The user decided to check with their insurers before confirming the booking and will call back later.",
+    "transcript": "bot:Thanks for calling BrightSmile Dental, this is Jessica. How can I help you today — are you looking to book an appointment, or do you have a question about our services?\nhuman:Last week, I got consulted by one of the in the clinic, he asked me to book for a RCT and the cleaning before RCT. So I wanted to book the complete session that would do deep cleaning and then RCT. \nbot:Got it. We can definitely help with that. Let’s start by booking the deep cleaning and the root canal treatment. Could you share your full name, please?\nhuman:Yeah. My name is Dibesh Rathore. \nbot:Thanks, Dibesh. Let’s move on to scheduling — do you have a preferred day and time for the appointments, or should I check what’s available?\nhuman:Are you available on Wednesday evening? \nbot:Our clinic hours on Wednesday are from nine in the morning to six in the evening, so we don’t have evening slots available. Would you like me to check for an afternoon appointment instead?\nhuman:I can come in around four PM. \nbot:Alright, let me check for Wednesday at four PM. One moment... \n\nYes, we have availability for a deep cleaning at four PM on Wednesday, June twenty-fourth. After that, we can schedule the root canal treatment. Does that work for you?\nhuman:Yeah. Sure. \nhuman:And what would be the pricing total pricing? And can I use my insurer for this? \nbot:For self-pay, the deep cleaning typically ranges from one hundred fifty to three hundred fifty dollars per quadrant, and root canal treatment is about seven hundred to fifteen hundred dollars depending on the tooth. The exact cost will depend on the dentist's assessment during your visit.As for insurance, we’re in-network with Delta Dental, Cigna, MetLife, Aetna, and Guardian. Preventive care like cleanings is often covered around one hundred percent, and root canals are usually covered at fifty to eighty percent after your deductible. I’d recommend confirming the exact coverage with your insurance provider to know your out-of-pocket costs. Would you like me to proceed with booking?\nhuman:Do you provide Humana? \nbot:We’re not in-network with Humana, so it would be considered out-of-network. You can still use your insurance, but the coverage might be lower, and you’d need to check with Humana for the exact details. Should I go ahead and book the appointments?\nhuman:You told that you do provide Cigna. \nbot:Yes, that's correct! We are in-network with Cigna. If Cigna is your provider, you should have better coverage for both the deep cleaning and the root canal treatment. Would you like me to confirm and finalize your appointments?\nhuman:Uh, no. Let me first check with both of my insurer, and then I will again call back to schedule it. \nbot:That makes sense, Dibesh. Feel free to call back once you've checked with your insurers, and \n",
+    "translation": null,
+    "extractedData": {
+      "name": "Dibesh",
+      "Last Name": "Rathore",
+      "email": null,
+      "Phone": null,
+      "Chief Complaint": "Need for deep cleaning and root canal treatment",
+      "Treatment Interest": "Deep cleaning and root canal treatment",
+      "DateTimeOfBooking": "Jun 24 2026 16:00",
+      "bookingInterest": "Hesistant about price/availability",
+      "IsHuamnHandover": "false"
+    },
+    "trialCall": true,
+    "timestamp": "2026-06-20T14:10:54.212Z",
+    "webhookId": "803f203e-7484-4a03-8bc5-2b9a47ee61cf"
+  }
+}

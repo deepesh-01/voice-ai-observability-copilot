@@ -1,10 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
-
-const here = dirname(fileURLToPath(import.meta.url));
-// tokens.json is gitignored — it holds live OAuth tokens.
-const STORE_PATH = resolve(here, '../../tokens.json');
+import { getPool, initSchema } from '../db/pool.js';
 
 export interface InstallTokens {
   accessToken: string;
@@ -18,39 +12,80 @@ export interface InstallTokens {
 }
 
 /**
- * Minimal persistence for the setup milestone: a JSON file keyed by locationId/companyId.
- * NOTE (functional-vs-mocked): this is real token storage, but single-process and
- * file-based — to be replaced by MongoDB (ADR-0002) before multi-tenant use.
+ * Persistence for HighLevel OAuth install tokens (R1.2), keyed by locationId/companyId.
+ * Backed by Postgres (`oauth_tokens`, ADR-0008) — durable and multi-tenant, replacing the
+ * earlier single-process tokens.json. Same three-function surface as before, so OAuth,
+ * ingestion, and the webhook handler are untouched by the swap.
  */
-type StoreShape = Record<string, InstallTokens>;
+type TokenRow = {
+  access_token: string;
+  refresh_token: string;
+  expires_at: string; // pg returns BIGINT as a string
+  user_type: string;
+  location_id: string | null;
+  company_id: string | null;
+};
 
-async function readStore(): Promise<StoreShape> {
-  try {
-    return JSON.parse(await readFile(STORE_PATH, 'utf8')) as StoreShape;
-  } catch {
-    return {};
-  }
+// initSchema is idempotent + cheap; memoize so token reads/writes work even when invoked
+// from a script that never booted the server (e.g. scripts/ingest.mts).
+let schemaReady: Promise<void> | undefined;
+function ensureSchema(): Promise<void> {
+  return (schemaReady ??= initSchema());
 }
 
-async function writeStore(store: StoreShape): Promise<void> {
-  await writeFile(STORE_PATH, JSON.stringify(store, null, 2), 'utf8');
+function installKey(tokens: InstallTokens): string {
+  return tokens.locationId ?? tokens.companyId ?? 'default';
+}
+
+function rowToTokens(row: TokenRow): InstallTokens {
+  return {
+    accessToken: row.access_token,
+    refreshToken: row.refresh_token,
+    expiresAt: Number(row.expires_at),
+    userType: row.user_type,
+    locationId: row.location_id ?? undefined,
+    companyId: row.company_id ?? undefined,
+  };
 }
 
 export async function saveTokens(tokens: InstallTokens): Promise<void> {
-  const key = tokens.locationId ?? tokens.companyId ?? 'default';
-  const store = await readStore();
-  store[key] = tokens;
-  await writeStore(store);
+  await ensureSchema();
+  await getPool().query(
+    `INSERT INTO oauth_tokens
+       (install_key, access_token, refresh_token, expires_at, user_type, location_id, company_id, updated_at)
+     VALUES ($1,$2,$3,$4,$5,$6,$7, now())
+     ON CONFLICT (install_key) DO UPDATE SET
+       access_token=EXCLUDED.access_token, refresh_token=EXCLUDED.refresh_token,
+       expires_at=EXCLUDED.expires_at, user_type=EXCLUDED.user_type,
+       location_id=EXCLUDED.location_id, company_id=EXCLUDED.company_id, updated_at=now()`,
+    [
+      installKey(tokens),
+      tokens.accessToken,
+      tokens.refreshToken,
+      tokens.expiresAt,
+      tokens.userType,
+      tokens.locationId ?? null,
+      tokens.companyId ?? null,
+    ],
+  );
 }
 
 export async function getTokens(key?: string): Promise<InstallTokens | undefined> {
-  const store = await readStore();
-  if (key) return store[key];
-  // Setup convenience: when only one install exists, return it.
-  const values = Object.values(store);
-  return values.length === 1 ? values[0] : undefined;
+  await ensureSchema();
+  const pool = getPool();
+  if (key) {
+    const { rows } = await pool.query<TokenRow>('SELECT * FROM oauth_tokens WHERE install_key = $1', [key]);
+    return rows[0] ? rowToTokens(rows[0]) : undefined;
+  }
+  // Setup convenience: when exactly one install exists, return it (limit 2 to detect "more than one").
+  const { rows } = await pool.query<TokenRow>('SELECT * FROM oauth_tokens LIMIT 2');
+  return rows.length === 1 && rows[0] ? rowToTokens(rows[0]) : undefined;
 }
 
 export async function listInstalls(): Promise<string[]> {
-  return Object.keys(await readStore());
+  await ensureSchema();
+  const { rows } = await getPool().query<{ install_key: string }>(
+    'SELECT install_key FROM oauth_tokens ORDER BY install_key',
+  );
+  return rows.map((r) => r.install_key);
 }

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { GHL } from '../config.js';
 import { getValidAccessToken } from './oauth.js';
+import type { ContactInfo } from '../analysis/types.js';
 
 /**
  * Thin client over the HighLevel Voice AI public API.
@@ -172,4 +173,41 @@ export async function getCallLog(
     params: { locationId: locationId ?? installKey },
   });
   return data;
+}
+
+/**
+ * Fetch a contact's identity (name/phone/email) — the authoritative source for lead
+ * contact info, since the call log only carries `contactId`. Best-effort: returns
+ * undefined on any error so lead extraction can fall back to the transcript.
+ * Contacts API uses the standard data API version (2021-07-28).
+ */
+export async function getContact(
+  contactId: string,
+  installKey?: string,
+): Promise<ContactInfo | undefined> {
+  try {
+    const token = await getValidAccessToken(installKey);
+    const { data } = await axios.get<{ contact?: GhlContact }>(
+      `${GHL.apiBase}/contacts/${contactId}`,
+      { headers: { Authorization: `Bearer ${token}`, Version: GHL.apiVersion } },
+    );
+    const c = data.contact;
+    if (!c) return undefined;
+    const name = c.contactName ?? [c.firstName, c.lastName].filter(Boolean).join(' ').trim();
+    return {
+      name: name || undefined,
+      phone: c.phone || undefined,
+      email: c.email || undefined,
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+interface GhlContact {
+  contactName?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  email?: string;
 }

@@ -1,0 +1,164 @@
+{
+  "id": "6a35206c88ba8e0f1c707f02",
+  "locationId": "B7TzvBb6H6QvDNdEEhlt",
+  "agentName": "BrightSmile Dental — Booking",
+  "businessName": "BrightSmile Dental",
+  "welcomeMessage": "Thanks for calling BrightSmile Dental! This is Jessica. Are you looking to book an appointment, or is there something else I can help with?",
+  "agentPrompt": "AGENT ROLE & OBJECTIVE:\nYou are Jessica, the front-desk booking assistant for \"BrightSmile Dental\".\nYour single goal is to book a dental appointment by collecting the required\ndetails and confirming them back to the caller. Stay warm, concise, and on-task.\n\nBOOKING FLOW (follow in order — do not skip steps):\n1. Greet and confirm the caller wants to book an appointment.\n2. Ask for the caller's full name.\n3. Ask the reason for the visit (e.g. check-up & cleaning, tooth pain, whitening).\n4. Ask for their preferred day and time. Offer two concrete options if they are\n   unsure (e.g. \"We have Tuesday at 10am or Thursday at 2pm\").\n5. Confirm the best phone number to reach them, and ask for an email for the\n   confirmation.\n6. Read ALL collected details back to the caller and ask them to confirm.\n7. Once confirmed, tell them the appointment is booked and they'll get a\n   confirmation by text/email. Close politely.\n\nRULES:\n- Collect: full name, reason for visit, preferred date/time, phone, email.\n- Ask ONE question at a time. Never ask for information already given.\n- If the caller raises an objection (price, time, hesitation), acknowledge it\n  once, briefly reassure, then steer back to booking. Do not argue or oversell.\n- If the caller asks something you can't answer (clinical advice, insurance\n  specifics), say a team member will follow up — do NOT guess or invent details.\n- If the caller declines to book, capture their name + number for a callback and\n  close warmly.\n- Never mention you are an AI unless directly asked.",
+  "voiceId": "g6xIsTj2HwM6VR4iXFCw",
+  "language": "en-US",
+  "responsiveness": 1,
+  "maxCallDuration": 900,
+  "sendUserIdleReminders": true,
+  "reminderAfterIdleTimeSeconds": 4,
+  "inboundNumber": null,
+  "inboundNumbers": [],
+  "callEndWorkflowIds": [],
+  "sendPostCallNotificationTo": {
+    "admins": true,
+    "allUsers": false,
+    "contactAssignedUser": false,
+    "specificUsers": [],
+    "customEmails": []
+  },
+  "agentWorkingHours": [],
+  "timezone": "Asia/Kolkata",
+  "isAgentAsBackupDisabled": false,
+  "translation": {
+    "enabled": false,
+    "language": null
+  },
+  "toolCallStrictMode": true,
+  "actions": [
+    {
+      "id": "6a368507902ec67064ef72cf",
+      "actionType": "DATA_EXTRACTION",
+      "name": "patientFirstName",
+      "actionParameters": {
+        "contactFieldId": "z9s6NrlS61a1BO2fhB8A",
+        "description": "The first name of the caller",
+        "examples": [
+          "John",
+          "Sarah"
+        ],
+        "overwriteExistingValue": false
+      }
+    },
+    {
+      "id": "6a368508aef0e2671cc37fcb",
+      "actionType": "DATA_EXTRACTION",
+      "name": "patientLastName",
+      "actionParameters": {
+        "contactFieldId": "ALs7NNWmQtq2MbGwP8R4",
+        "description": "The last name of the caller",
+        "examples": [
+          "Smith",
+          "Johnson"
+        ],
+        "overwriteExistingValue": false
+      }
+    },
+    {
+      "id": "6a3685084dc36112342e7369",
+      "actionType": "DATA_EXTRACTION",
+      "name": "email",
+      "actionParameters": {
+        "contactFieldId": "fjoDb6sw04HH146LkqY6",
+        "description": "The email address of the caller",
+        "examples": [
+          "john@example.com",
+          "sarah@company.com"
+        ],
+        "overwriteExistingValue": false
+      }
+    },
+    {
+      "id": "6a368509aef0e2e86bc37fcc",
+      "actionType": "DATA_EXTRACTION",
+      "name": "phone",
+      "actionParameters": {
+        "contactFieldId": "tphlgFRwg309YN21XUHn",
+        "description": "When the caller shares their phone number, extract and save it with country code.",
+        "examples": [
+          "+15551234567",
+          "+15559876543"
+        ],
+        "overwriteExistingValue": false
+      }
+    },
+    {
+      "id": "6a368730902ec6f0ceef73a3",
+      "actionType": "DATA_EXTRACTION",
+      "name": "Extract Chief Complaint",
+      "actionParameters": {
+        "contactFieldId": "9FQZ4PhZHs1v2Q7Uxmlc",
+        "description": "Store the complained shared by user for example tooth pain, gum bleeding, tooth broke or whatever is the problem shared by user.",
+        "examples": [
+          "Backside teeth paining",
+          "Gum bleeding when brushing teeth",
+          "Gum bleeding while eating fruits",
+          "Sensitive teeth after drinking cold or hot",
+          "Tooth aches after eating on certain side of mouth"
+        ],
+        "overwriteExistingValue": true
+      }
+    },
+    {
+      "id": "6a368731902ec665fcef73a4",
+      "actionType": "DATA_EXTRACTION",
+      "name": "Extract Treatment Interest",
+      "actionParameters": {
+        "contactFieldId": "NYs0XpJ3N4eqhCGQVuZo",
+        "description": "Extract the treatment about which user wanted more information, user may come with some treatment they already know but it's our job to guide them write, we don't just store what user cam up with but also what we suggested.",
+        "examples": [
+          "User : Root canal, Agent : Teeth cleaning",
+          "User : Teeth implant, Agent : Root Canal",
+          "User : Teeth removal, Agent : Root Canal"
+        ],
+        "overwriteExistingValue": true
+      }
+    },
+    {
+      "id": "6a36873188ba8e0f2d70e654",
+      "actionType": "DATA_EXTRACTION",
+      "name": "Extract DateTimeOfBooking",
+      "actionParameters": {
+        "contactFieldId": "thiNOoeJE6cM2HlCsMTq",
+        "description": "The date time selected by user for confirming appointment.",
+        "examples": [
+          "Jun 20 2023  10:30",
+          "Jul 18 2026  16:00",
+          "Sep 25 2026 13:00"
+        ],
+        "overwriteExistingValue": true
+      }
+    },
+    {
+      "id": "6a3689bcdc671ffa9073e396",
+      "actionType": "DATA_EXTRACTION",
+      "name": "Extract bookingInterest",
+      "actionParameters": {
+        "contactFieldId": "b2wZwjlF38OB7i0ht27A",
+        "description": "This field stores the booking interest of user. Only use one of the below value \n1. Interested\n2. Not Interested\n3. Hesistant about price/availability\n4. Booked\n5. Booked but looking for early slot.",
+        "examples": [
+          "Interested"
+        ],
+        "overwriteExistingValue": true
+      }
+    },
+    {
+      "id": "6a368a5a88ba8e67ee70e7da",
+      "actionType": "DATA_EXTRACTION",
+      "name": "Extract IsHuamnHandover",
+      "actionParameters": {
+        "contactFieldId": "mlA5sakU7GnomUcM64cd",
+        "description": "Treat this like a boolean value, this should be treated as ultimate fallback not a first action. Only two values are accepted true or false.",
+        "examples": [
+          "True",
+          "False"
+        ],
+        "overwriteExistingValue": true
+      }
+    }
+  ]
+}

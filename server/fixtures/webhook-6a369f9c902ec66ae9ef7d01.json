@@ -1,0 +1,51 @@
+{
+  "headers": {
+    "host": "voai.deepesh-engg.in",
+    "user-agent": "axios/0.21.4",
+    "content-length": "1960",
+    "accept": "application/json, text/plain, */*",
+    "accept-encoding": "gzip, br",
+    "cdn-loop": "cloudflare; loops=1",
+    "cf-connecting-ip": "34.71.23.213",
+    "cf-ipcountry": "US",
+    "cf-ray": "a0eb5ebc5d9a863e-ORD",
+    "cf-visitor": "{\"scheme\":\"https\"}",
+    "cf-warp-tag-id": "fe11b46c-21bf-4f73-af79-ad7c2b5a2120",
+    "connection": "keep-alive",
+    "content-type": "application/json",
+    "traceparent": "00-7669ea14dd2c92f8c86250c67a2eaade-9df1c3ce7e9da8f7-00",
+    "x-forwarded-for": "34.71.23.213",
+    "x-forwarded-proto": "https",
+    "x-ghl-signature": "0yRw4OnULhaSELp7vRthomEpjDi3E2EhxqY4vC33CcBnUUuupGpg6fr8aqwIOaTXGrS7H4nVEHgmmUK7TkJGDQ==",
+    "x-wh-signature": "IzZ856FeA70OMX8MmnrMhbjHxpZORnjMHD5PIdcZoRyfgEjopn79aR/kSifQf8ZPIHoPWFUNbmU1LcXCxsKp6Eq/x1j4Zu0SbQowcOwHhoV0Wbma7kC6R1WheEEJKFAcROTgXFyfZtrcVqZ7PWyeZCYmnZXdqauhVJBUd1B21Nl1GB/fe6b8tNI+a8EqBEUyqMGzChxztz9pUg2Ny8QhCBbZ9Y13rGTTd1UW5T0/zjTCk9EU+fV7gxmaCO5O3sUM0uMEW1MRucexs44Am2a9vH1QCyae4FlVAnMghkNxYnERcBEizjT6GlBk62DLS+53x4lH4DvyqtTDJDB1Wr1+YJHZRlR2V5QJcLRYUAyedXRh9vvV+KBHs+QtrhcEtp1b4MmZqcSAQQA68lAT+syHg8O+9pb2VBpai9c6JbzND7EiyPltjIAd0HoVxWh7z7tBexR+f/+KyKVjZxZl/hud/n2pF+sHr72RS5kQIq/T4ypQDeTdC/MCwGMm8YIdOZIPRZ0Fr/qZy2mh2WGljZW6mfdUSLqc1EgAXJhdZkDaplPbjiivz6RQ7TQ2FH8O+7PIxpmaxJphxBCphYpwi6OxyKrXDaO27KcCOkzrnmbvRgHjFJ/NjeCMGdEhLAvhDZyMGJedw9+2ES0qscVSrMgiFYkvqzT7hBEYgd3PxMHS2bE="
+  },
+  "body": {
+    "type": "VoiceAiCallEnd",
+    "locationId": "B7TzvBb6H6QvDNdEEhlt",
+    "versionId": "6a344e6ddd3d8c9f262936f5",
+    "appId": "6a341c086a3eceb7ad2e99f9",
+    "id": "6a369f9c902ec66ae9ef7d01",
+    "contactId": "uJTXf5GbFynDMPPrD16K",
+    "createdAt": "2026-06-20T14:11:40.298Z",
+    "duration": 59,
+    "executedCallActions": [],
+    "agentId": "6a35206c88ba8e0f1c707f02",
+    "summary": "The user inquired about deep cleaning, teeth whitening, teeth piercing, and braces. The agent clarified that the clinic offers deep cleaning but does not provide teeth whitening, teeth piercing, or braces. The user declined further assistance and ended the call.",
+    "transcript": "bot:Thanks for calling BrightSmile Dental, this is Jessica. How can I help you today — are you looking to book an appointment, or do you have a question about our services?\nhuman:Do you provide deep cleaning, like, specifically teeth whitening And then I wanted I also wanted teeth piercing. \nbot:We do provide deep cleaning, which includes scaling and root planing for gum health, but we don’t offer teeth whitening or cosmetic procedures like teeth piercing. We’re a general dental clinic focused on preventive and restorative care. If you’d like, I can help you book a deep cleaning appointment or a general exam to assess your needs. Let me know!\nhuman:Do you also not provide braces or do you? \nbot:We don’t provide braces or orthodontic treatments. For that, you’d need to see an orthodontist. However, if you’d like, we can book a general exam to assess your dental health and guide you on the next steps. Let me know how I can assist!\nhuman:No. Thank you. \nbot:You're welcome! If \n",
+    "translation": null,
+    "extractedData": {
+      "name": null,
+      "Last Name": null,
+      "email": null,
+      "Phone": null,
+      "Chief Complaint": null,
+      "Treatment Interest": "Deep cleaning",
+      "DateTimeOfBooking": null,
+      "bookingInterest": "Not Interested",
+      "IsHuamnHandover": null
+    },
+    "trialCall": true,
+    "timestamp": "2026-06-20T14:12:43.495Z",
+    "webhookId": "4cab2be4-5513-439a-aa1d-9cc4c8db0ff4"
+  }
+}

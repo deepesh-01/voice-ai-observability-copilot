@@ -1,0 +1,51 @@
+{
+  "headers": {
+    "host": "voai.deepesh-engg.in",
+    "user-agent": "axios/0.21.4",
+    "content-length": "3944",
+    "accept": "application/json, text/plain, */*",
+    "accept-encoding": "gzip, br",
+    "cdn-loop": "cloudflare; loops=1",
+    "cf-connecting-ip": "34.10.82.39",
+    "cf-ipcountry": "US",
+    "cf-ray": "a0eb63478bf9dadc-ORD",
+    "cf-visitor": "{\"scheme\":\"https\"}",
+    "cf-warp-tag-id": "fe11b46c-21bf-4f73-af79-ad7c2b5a2120",
+    "connection": "keep-alive",
+    "content-type": "application/json",
+    "traceparent": "00-d58d37dca9fb4826f3ebcd1f7807a244-f225563713651c6f-00",
+    "x-forwarded-for": "34.10.82.39",
+    "x-forwarded-proto": "https",
+    "x-ghl-signature": "RkSVUUXScf7Ew90xaSZOaniAHc/A55HWpOrzt3F1vF2QtKr9hCAkUHO6fjXysY0pkN0ZrZtlZNpvpc6O4sh7Ag==",
+    "x-wh-signature": "MeBV83cGL3V1sXyrDffgfJsmDaP/DXsHp3wQ65BT39FjstYr5VpGmp+e1HpIBgJyHekNeaATJFnRjn0ycn75+sUF5YOJVMfRBToTfy55w7wGhNtlc2aobpR9UpJ4fkEL1VZxNeQuJnDCZW+yRPhblvrik5XKKkHjc+u07BzhUsqsFFyD3Wx4tpzvktw44sY5qB35UMAmPsEVA07FvPsgmBNtKVb52lnJw5ej+ENHNNDVGgYnspx5FkBWYqVSflr5OYFAvzZgSblvRB0lWPtBeCBxD8LqBbAJ6dHsGtoh3CaYE7xcOLYdu7TC83KUVPuxoAvFES4ANFXG1vax4d5F4DpLsZoZV8uxzoTOhdlnr7lazfmkGWN1g2FI4DZS3nbFU5+c1MmBkkUnmHlWhTO69SYhbb4NgGdYJhjNoaeXpcRsjShnptQ9ktllRDf/zU/qCal5pCL1SmsoHUxKqg0s9DKnCrHzKNTGQNem8pJc99CDlvcx+CTDy5eTL6jfOv54o4MyPjiyuNzRTC/9aCPLArEXxxWCOB7Cf+6bKnOxYrCrD3JzzTKNne3lONn6dn23qmdhAr2PEQkuIeaynlhZcBmoduhyw7WW6mq/BUAn5aV9rMl8mDJktTC765wb/5j6ocnecDv5lLBLFR4SAsZ80Bzw9x7iJ2pmRp8NApdt9vo="
+  },
+  "body": {
+    "type": "VoiceAiCallEnd",
+    "locationId": "B7TzvBb6H6QvDNdEEhlt",
+    "versionId": "6a344e6ddd3d8c9f262936f5",
+    "appId": "6a341c086a3eceb7ad2e99f9",
+    "id": "6a369fec902ec67e0def7d22",
+    "contactId": "uJTXf5GbFynDMPPrD16K",
+    "createdAt": "2026-06-20T14:13:00.083Z",
+    "duration": 165,
+    "executedCallActions": [],
+    "agentId": "6a35206c88ba8e0f1c707f02",
+    "summary": "The user called BrightSmile Dental reporting severe toothache and swollen gums with unbearable pain starting the previous night. The agent advised urgent care due to the severity and lack of emergency services at the clinic, offered to book the earliest appointment on Monday, but the user was dissatisfied and declined further assistance, expressing frustration and ending the call.",
+    "transcript": "bot:Thanks for calling BrightSmile Dental, this is Jessica. How can I help you today — are you looking to book an appointment, or do you have a question about our services?\nhuman:I have severe toothache. My most of my gums are swollen. I am not able to anything. This happened yesterday night, and the pain is unbearable. \nbot:I'm so sorry to hear you're in that much pain — that sounds really tough. Severe toothache and swollen gums can be serious. Since the pain is unbearable and started last night, I’d recommend seeking urgent care right away, especially if there’s any swelling affecting your breathing or swallowing, or if you have a fever.\n\nIf you'd like, I can book you the earliest available appointment with us for an assessment. Would that help?\nhuman:I don't think so. I can we are just any longer. I came up for root canal last week, and this week, I'm prepping for this. It's really painful. I cannot live like this. Do you have any emergency? Ask. I want to come in ASAP. \nbot:I completely understand — that level of pain is overwhelming, and I’m so sorry you’re going through this. While we don’t have emergency services, I can prioritize getting you the earliest available appointment. Let me check for the soonest slot we have on Monday morning when we open. Would that work for you?\nhuman:No. It won't work for you. Can you connect me with the doctor right now? \nbot:I wish I could connect you directly, but our dentists aren’t available outside clinic hours. Since it’s Saturday evening and we’re closed tomorrow, I strongly recommend heading to an urgent care clinic or emergency dental service tonight. They’ll be able to help you immediately.\n\nIf you’d like, I can still book you the first available appointment on Monday morning for follow-up care. Let me know how you’d like to proceed.\nhuman:Is there no way to connect or talk to doc Because this is really unbearable. I am not even able to talk clearly. \nbot:I’m so sorry you’re in this much pain — I truly wish I could connect you to the dentist right now, but unfortunately, they’re unavailable outside clinic hours. For something this severe, I strongly urge you to visit an emergency dental clinic or hospital tonight. They’ll be able to provide immediate relief.\n\nIf you’d like, I can still secure the first available appointment for you on Monday morning for follow-up care. Please let me know if there’s anything else I can do to assist.\nhuman:No. This is really bad. I was told you there is emergency, can talk to the clinic, and they will connect me with the doctor. But now you are do what you are doing is really bad. I don't want to come in again. Thank you for the call. I will also give you the worst review ever. Thank you. Bye bye. \nbot:I'm truly sorry you're feeling \n",
+    "translation": null,
+    "extractedData": {
+      "name": null,
+      "Last Name": null,
+      "email": null,
+      "Phone": null,
+      "Chief Complaint": "Severe toothache and swollen gums with unbearable pain",
+      "Treatment Interest": "Root canal",
+      "DateTimeOfBooking": null,
+      "bookingInterest": "Not Interested",
+      "IsHuamnHandover": null
+    },
+    "trialCall": true,
+    "timestamp": "2026-06-20T14:15:49.544Z",
+    "webhookId": "82b762b3-a215-4e24-9dc6-2645d6a08ad5"
+  }
+}

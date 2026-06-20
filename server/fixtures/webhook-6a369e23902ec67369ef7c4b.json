@@ -1,0 +1,51 @@
+{
+  "headers": {
+    "host": "voai.deepesh-engg.in",
+    "user-agent": "axios/0.21.4",
+    "content-length": "2492",
+    "accept": "application/json, text/plain, */*",
+    "accept-encoding": "gzip, br",
+    "cdn-loop": "cloudflare; loops=1",
+    "cf-connecting-ip": "34.171.187.222",
+    "cf-ipcountry": "US",
+    "cf-ray": "a0eb56225bc3eb0b-ORD",
+    "cf-visitor": "{\"scheme\":\"https\"}",
+    "cf-warp-tag-id": "fe11b46c-21bf-4f73-af79-ad7c2b5a2120",
+    "connection": "keep-alive",
+    "content-type": "application/json",
+    "traceparent": "00-994a218e8e1a9964668978e341b64352-abd505218e39a5a5-00",
+    "x-forwarded-for": "34.171.187.222",
+    "x-forwarded-proto": "https",
+    "x-ghl-signature": "uFX7cGgHgdNXyPrCQKp2i17wiiZNKkJ2N2kXld2PQtrlqkMXTUT74lrSHRHeoZUFIAMnChF8cYvTCWIIED0EBg==",
+    "x-wh-signature": "lWnV9sIVGSdJAa8fnRefpMFbx1AsZHsagqSDbjXu/6gLyL3eglxU4QRUSO1CZAQUcniTQ03upiYDf8dEnHmuPhm5MvRvCUbRvufAuOmje7khVFCDz1TYkp9VHoiwI4MKUWjiNOQYYQi/7B20jbqM+CUfdXVvr+3RF8ni6V6YLfdoBxRJ5hvlCzHmnzD6+wqWj1FpqyR8xxzu0JmrqtEpqMm5iQnOtjEw468j+jQC28WhuWqyErPJEMcExVwfeieINUiB5jfu0uEJLpploxIpvHQKnz1w+N8q/qGyCoECKyb6rKRD9s045UgA5qFYsr8yzZXhi/AwAYUzDcX0OS2ysSSqnqAB872T0XFvwFtlN0+uScO9VV6EezUg8J7bA7PGUH8DcOK1Izxhn8+wvWFaCEwphp9n8AI8gIoaRsYBzE0NUimeiRuVg9aelYypqXuXyy21CR7YFbSv2XZhjw0PKNQgvhMrVB1erLcpO5CnZe2Hf0uV6e/pkR8oW1bniwsPKGvsIcXvZb8mqpoxrDZhuIH7rRidZsuf0UJtbMd5AZjopsEtHSje0nPBM1PQK4dfBpQ5ieC8EB2kmos8Cfj8gPK05pQjojW8+ohCJNxSf3KWr5w7T8567ZOSROzsn2fOy1zjfKyXhqp9Ly905JrHcK45/Qcn/5wwoMDF0CWy62M="
+  },
+  "body": {
+    "type": "VoiceAiCallEnd",
+    "locationId": "B7TzvBb6H6QvDNdEEhlt",
+    "versionId": "6a344e6ddd3d8c9f262936f5",
+    "appId": "6a341c086a3eceb7ad2e99f9",
+    "id": "6a369e23902ec67369ef7c4b",
+    "contactId": "uJTXf5GbFynDMPPrD16K",
+    "createdAt": "2026-06-20T14:05:23.833Z",
+    "duration": 83,
+    "executedCallActions": [],
+    "agentId": "6a35206c88ba8e0f1c707f02",
+    "summary": "The user called BrightSmile Dental reporting tooth pain due to not having a cleaning in six months. The agent provided information about teeth cleaning costs and insurance coverage, but the user declined to book an appointment due to expense concerns.",
+    "transcript": "bot:Thanks for calling BrightSmile Dental, this is Jessica. How can I help you today — are you looking to book an appointment, or do you have a question about our services?\nhuman:Actually, I'm dealing with tooth pain. And that's because I didn't got my tooth cleaned for last six months. I was advised by my dentist to get it cleaned every three months. So I think that's the problem. \nbot:I'm sorry to hear you're dealing with tooth pain — that can be really uncomfortable. Let's get you scheduled for a cleaning and have the dentist take a look to make sure everything's okay. When would work best for you? We’re open Monday to Friday from 9 AM to 6 PM, and Saturday from 9 AM to 1 PM.\nhuman:What would be the costing for this? \nbot:For a teeth cleaning, the self-pay cost typically ranges from seventy-five to two hundred dollars. If you’re also due for a dental exam, that’s usually fifty to one hundred fifty dollars. If X-rays are needed, they can range from twenty-five to fifty dollars for routine ones, or up to about two hundred dollars for a full panoramic. \n\nIf you have insurance, preventive care like cleanings and exams is often covered around one hundred percent in-network, but it’s best to confirm with your provider. Let me know if you'd like to go ahead and book!\nhuman:No. It's too expensive for me. Right now. I think I will wait for some time until I have enough money. Thank you. \nbot:I completely understand — dental care can feel like a big expense. \n",
+    "translation": null,
+    "extractedData": {
+      "name": null,
+      "Last Name": null,
+      "email": null,
+      "Phone": null,
+      "Chief Complaint": "tooth pain due to not having a cleaning for six months",
+      "Treatment Interest": "teeth cleaning",
+      "DateTimeOfBooking": null,
+      "bookingInterest": "Not Interested",
+      "IsHuamnHandover": null
+    },
+    "trialCall": true,
+    "timestamp": "2026-06-20T14:06:51.120Z",
+    "webhookId": "7fcecd22-e9d1-4f30-b5c7-c09725b00d8c"
+  }
+}
