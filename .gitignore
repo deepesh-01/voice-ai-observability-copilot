@@ -50,3 +50,6 @@ coverage/
 
 # transient webhook payload capture (may contain headers/PII)
 server/fixtures/webhook-sample.json
+
+# Personal notes (not deliverables) — kept in-tree but out of the repo
+docs/demo-script-d2.md
