@@ -1,5 +1,24 @@
 # Deploy: move the prod origin to the home MacBook Pro
 
+> **✅ EXECUTED 2026-06-21.** Prod origin now runs on `deepeshs-macbook-pro` (user `deepesh`).
+> - **App** + **tunnel** under pm2 (`voai`, `voai-tunnel`) — `pm2 save`d.
+> - **DB** restored into the MBP's Postgres **16.14** (the one pg17-only `SET transaction_timeout`
+>   line stripped); role `deepeshz2` created so the existing `.env` works unchanged. Counts match:
+>   raw_call=16, call_analysis=16, call_lead=16, call_kpi=96, oauth_tokens=1.
+> - **Tunnel** `voai-mbp` (`e599777d-5d8a-46a7-90fe-3f107e1c1a40`); DNS for `voai.deepesh-engg.in`
+>   cut over to it. The air's `main` tunnel + its other sites are untouched; the air's voai app
+>   was stopped.
+> - Verified live: `/health` 200, dashboard renders via the MBP, `/api` auth clean.
+> - **One manual step still pending — boot persistence (needs sudo, run on the MBP):**
+>   ```
+>   sudo env PATH=$PATH:/opt/homebrew/Cellar/node/26.0.0/bin /opt/homebrew/lib/node_modules/pm2/bin/pm2 startup launchd -u deepesh --hp /Users/deepesh
+>   ```
+>   Until this runs, pm2 restarts crashes but won't relaunch on a full reboot.
+> - Minor leftover (harmless): the air's `~/.cloudflared/config.yml` still has a now-dead `voai`
+>   ingress block; remove it next time that file is edited (no restart needed — DNS already moved).
+
+
+
 Goal: host `voai.deepesh-engg.in` on the always-on home Mac (`deepeshs-macbook-pro`,
 Tailscale `100.114.29.6`) instead of the laptop that travels — so the origin survives
 reboots, sleep, and losing internet on the move.
