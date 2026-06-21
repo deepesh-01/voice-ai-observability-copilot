@@ -66,6 +66,14 @@ export const config = {
    * VoiceAiCallEnd delivery confirms the public key. (WEBHOOK_REQUIRE_SIGNATURE=true)
    */
   requireWebhookSignature: process.env.WEBHOOK_REQUIRE_SIGNATURE === 'true',
+  /**
+   * Shared bearer token guarding the read API (`/api/*`). When set, every `/api`
+   * request must carry `Authorization: Bearer <token>` (or `x-api-key`). The server
+   * injects this token into the served SPA at runtime so the embedded + standalone
+   * dashboard can call the API without the token ever living in git. Empty → the API
+   * is open (local dev/tests); set it in prod. (API_AUTH_TOKEN)
+   */
+  apiAuthToken: process.env.API_AUTH_TOKEN ?? '',
 } as const;
 
 /** The OAuth redirect URI registered in the Marketplace app must match this exactly. */

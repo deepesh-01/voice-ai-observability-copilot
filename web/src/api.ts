@@ -261,8 +261,18 @@ function validateStoredCall(data: unknown): StoredCall {
 
 // ─── Fetch helpers ────────────────────────────────────────────────────────────
 
+/**
+ * Auth header for the read API. The backend injects `window.__API_TOKEN__` into the
+ * served SPA at runtime (it's never in git); we echo it as a bearer token so the
+ * token-guarded `/api/*` accepts the request. Absent in local dev (API open).
+ */
+function apiHeaders(): HeadersInit {
+  const token = window.__API_TOKEN__;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function apiFetch(url: string): Promise<unknown> {
-  const res = await fetch(url);
+  const res = await fetch(url, { headers: apiHeaders() });
   if (!res.ok) {
     throw new Error(`API ${res.status} from ${url}: ${await res.text().catch(() => '')}`);
   }
@@ -401,7 +411,7 @@ function validateLead(data: unknown): CallLead {
 
 /** One call's lead facts + signals. Returns null when no lead was stored for the call. */
 export async function fetchLead(callId: string): Promise<CallLead | null> {
-  const res = await fetch(`/api/leads/${encodeURIComponent(callId)}`);
+  const res = await fetch(`/api/leads/${encodeURIComponent(callId)}`, { headers: apiHeaders() });
   if (res.status === 404) return null;
   if (!res.ok) {
     throw new Error(`API ${res.status} from /api/leads/${callId}: ${await res.text().catch(() => '')}`);
