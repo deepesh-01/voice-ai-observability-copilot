@@ -28,6 +28,7 @@ observability layer ensuring agents perform optimally through automated analysis
 | ID | Requirement |
 |------|-------------|
 | **R2.1** | Ingest and analyze existing Voice AI agent call transcripts. |
+| **R2.1a** | **Continuous / real-time ingestion** — new calls are ingested and scored **automatically on completion** (via the `VoiceAiCallEnd` webhook), not only on a manual pull. This is the brief's "**real-time observability layer**" / "**Validation Flywheel**." *(Derived: implied by the Challenge's "real-time" language, not in the verbatim numbered list. Satisfied — see the webhook ingestion pipeline.)* |
 | **R2.2** | Set observability parameters based on the agent's specific goals or script. |
 | **R2.3** | Identify deviations, failures, or missed opportunities against success criteria (KPIs) in the logs. |
 
