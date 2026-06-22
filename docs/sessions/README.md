@@ -24,7 +24,7 @@ the next action. This is the audit trail that makes a solo "Team of One" build l
 | S-014 | 2026-06-19 | UI craft pass (Emil/UX-007), Playwright E2E + vitest, agent names (UX-008), recommendation caching (UX-009) | — | [session-014.md](./session-014.md) |
 | S-015 | 2026-06-20 | Auth→Postgres; README (D3); lead/booking observability signals; raw_call normalization; realistic native-extraction agent + 16 real calls + hybrid ingestion | ADR-0010/0011/0012/0013 | [session-015.md](./session-015.md) |
 | S-016 | 2026-06-20 | Dashboard lead/signal surfacing (task #12: CallView panel + AgentView badges/filters + Overview counts); full Emil polish; Connections→icon+modal; unified centered loader; non-destructive Refresh | — (UX-010..013) | [session-016.md](./session-016.md) |
-| S-017 | 2026-06-21 | Embed verified inside HighLevel (Custom Page + sidebar, A-001 ✅); read-API bearer auth; R2.1a (real-time flywheel); public GitHub repo (D1); **prod origin moved to always-on home MBP** (pm2 + DB migrate + dedicated tunnel, via Tailscale) | — (R2.1a) | [session-017.md](./session-017.md) |
+| S-017 | 2026-06-21 | Embed verified inside HighLevel (Custom Page + sidebar, A-001 ✅); read-API bearer auth; R2.1a (real-time flywheel); public GitHub repo (D1); **prod origin moved to an always-on home machine** (pm2 + DB migrate + dedicated tunnel, via Tailscale) | — (R2.1a) | [session-017.md](./session-017.md) |
 
 ## Session-close practice (always do this before a session ends)
 

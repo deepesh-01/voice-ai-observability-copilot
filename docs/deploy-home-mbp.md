@@ -1,143 +1,120 @@
-# Deploy: move the prod origin to the home MacBook Pro
+# Deploy: host the prod origin on an always-on machine via a Cloudflare Tunnel
 
-> **✅ EXECUTED 2026-06-21.** Prod origin now runs on `deepeshs-macbook-pro` (user `deepesh`).
-> - **App** + **tunnel** under pm2 (`voai`, `voai-tunnel`) — `pm2 save`d.
-> - **DB** restored into the MBP's Postgres **16.14** (the one pg17-only `SET transaction_timeout`
->   line stripped); role `deepeshz2` created so the existing `.env` works unchanged. Counts match:
->   raw_call=16, call_analysis=16, call_lead=16, call_kpi=96, oauth_tokens=1.
-> - **Tunnel** `voai-mbp` (`e599777d-5d8a-46a7-90fe-3f107e1c1a40`); DNS for `voai.deepesh-engg.in`
->   cut over to it. The air's `main` tunnel + its other sites are untouched; the air's voai app
->   was stopped.
-> - Verified live: `/health` 200, dashboard renders via the MBP, `/api` auth clean.
-> - **One manual step still pending — boot persistence (needs sudo, run on the MBP):**
->   ```
->   sudo env PATH=$PATH:/opt/homebrew/Cellar/node/26.0.0/bin /opt/homebrew/lib/node_modules/pm2/bin/pm2 startup launchd -u deepesh --hp /Users/deepesh
->   ```
->   Until this runs, pm2 restarts crashes but won't relaunch on a full reboot.
-> - Minor leftover (harmless): the air's `~/.cloudflared/config.yml` still has a now-dead `voai`
->   ingress block; remove it next time that file is edited (no restart needed — DNS already moved).
+How `https://voai.deepesh-engg.in` is served publicly. The app runs on an **always-on machine**
+(a Mac, in our case) and is exposed to the internet through a **Cloudflare Tunnel (`cloudflared`)** —
+an **outbound-only** connection to Cloudflare's edge, so there are **no open inbound ports / no
+port-forwarding**, TLS is terminated at the edge, and the marketplace iframe + OAuth redirect +
+webhook all share one stable HTTPS origin.
 
-
-
-Goal: host `voai.deepesh-engg.in` on the always-on home Mac (`deepeshs-macbook-pro`,
-Tailscale `100.114.29.6`) instead of the laptop that travels — so the origin survives
-reboots, sleep, and losing internet on the move.
+> **Status:** deployed and live. App + tunnel are supervised by **pm2** (auto-restart on crash;
+> relaunch on boot once `pm2 startup` is enabled). Data lives in local Postgres on the host.
 
 ## Architecture
 
-Everything that serves `voai` moves to the MBP and becomes self-sufficient:
-
-- **App** — Node server on `:8095` (serves the SPA + API + OAuth), run under **pm2**
-  (auto-restart on crash + on boot).
-- **Postgres** — local Postgres on the MBP with the migrated data (16 calls + OAuth token).
-- **Tunnel** — a **new, dedicated cloudflared tunnel** named `voai` on the MBP. We re-point
-  **only** `voai.deepesh-engg.in`'s DNS to it.
-
-The air's existing tunnel keeps serving the other hostnames (apex, scout, welog, takejob) —
-we do **not** move those. Same OS username (`deepeshz2`) on both Macs, so the existing
-`DATABASE_URL=postgresql://deepeshz2@localhost:5432/voiceai_observability` works unchanged.
-
-## Phase 0 — move two files to the MBP (no SSH needed, via Tailscale Taildrop)
-
-From the **air** (this machine):
-
-```bash
-tailscale file cp /tmp/voiceai_observability.sql \
-  /Users/deepeshz2/Documents/highlevel-assignment/.env \
-  deepeshs-macbook-pro:
+```
+  HighLevel / browser ──HTTPS──▶ Cloudflare edge ──tunnel (outbound)──▶ host:8095
+                                  (TLS, DDoS)        cloudflared           Node app
+                                                                          ├─ SPA + API + OAuth
+                                                                          └─ Postgres (local)
 ```
 
-On the **MBP**, receive them into the home dir:
+- **App** — single Node process on `:8095` (serves the SPA + API + OAuth), under **pm2**.
+- **Postgres** — local on the host, holding the persisted calls + OAuth tokens.
+- **Tunnel** — a dedicated `cloudflared` tunnel; only `voai.deepesh-engg.in`'s DNS points to it.
+  (If the same host runs other tunnels/sites, leave those untouched — use a separate tunnel.)
+
+Below is the runbook to stand this up on a fresh host (or move it to a new one). Placeholders:
+`<host>` = the target machine, `<user>` = its OS user, `<tunnel-id>` = the id `cloudflared` prints.
+
+## Phase 0 — get two files onto the host
+
+The app needs its `.env` (secrets + `DATABASE_URL`) and a DB dump. Transfer them over any private
+channel (we used Tailscale Taildrop; `scp` over a VPN works too):
 
 ```bash
-cd ~ && tailscale file get .
-# → ~/voiceai_observability.sql  and  ~/.env
+# from the source machine — produce a dump with a pg_dump matching the source server version
+pg_dump --no-owner --no-privileges voiceai_observability > voiceai_observability.sql
+# then copy voiceai_observability.sql and the repo .env to <host> by your chosen method
 ```
 
-## Phase 1 — install the stack (on the MBP)
+## Phase 1 — install the stack (on the host)
 
 ```bash
-# Homebrew first if it's not installed: https://brew.sh
-brew install node postgresql@17 cloudflared
-brew services start postgresql@17
-# ensure the v17 client tools are on PATH for this shell:
-export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
+# Homebrew first if absent: https://brew.sh
+brew install node postgresql@<NN> cloudflared      # match <NN> to the dump's PG major version
+brew services start postgresql@<NN>
 ```
 
-## Phase 2 — restore the database (on the MBP)
+## Phase 2 — restore the database
 
 ```bash
 createdb voiceai_observability
-psql voiceai_observability < ~/voiceai_observability.sql
-# sanity check:
-psql voiceai_observability -c "SELECT count(*) FROM raw_call;"   # → 16
+# the role in DATABASE_URL must exist; create it once if needed:
+#   psql -d postgres -c "CREATE ROLE <db-user> LOGIN SUPERUSER;"
+psql -h localhost -U <db-user> -d voiceai_observability < voiceai_observability.sql
+psql -h localhost -U <db-user> -d voiceai_observability -c "SELECT count(*) FROM raw_call;"
 ```
 
-## Phase 3 — run the app (on the MBP)
+> Cross-version note: a dump from a newer Postgres can fail on an older server on one line
+> (`SET transaction_timeout = 0;` from PG17). Either install the matching major version, or strip
+> that single line before restore: `sed '/SET transaction_timeout = 0;/d' dump.sql > restore.sql`.
+
+## Phase 3 — run the app (under pm2)
 
 ```bash
 git clone https://github.com/deepesh-01/voice-ai-observability-copilot ~/voai
 cd ~/voai
-cp ~/.env .env                         # the Taildropped env (secrets + DATABASE_URL)
+cp /path/to/.env .env                  # the transferred env (secrets + DATABASE_URL)
 ( cd server && npm install )
 ( cd web && npm install && npm run build )
 
-# auto-restart + start-on-boot:
 npm install -g pm2
-cd ~/voai/server && pm2 start "npm run start" --name voai
+cd ~/voai/server && pm2 start npm --name voai -- run start
 pm2 save
-pm2 startup            # run the sudo command it prints, to enable launch-on-boot
+pm2 startup            # prints a `sudo …` command — run it to enable launch-on-boot
 
-# verify locally:
 curl -s localhost:8095/health
 ```
 
-## Phase 4 — dedicated tunnel + DNS cutover (on the MBP)
+## Phase 4 — dedicated tunnel + DNS
 
 ```bash
 cloudflared tunnel login               # browser → authorize the Cloudflare account
-cloudflared tunnel create voai         # creates tunnel + ~/.cloudflared/<id>.json
+cloudflared tunnel create voai         # creates the tunnel + ~/.cloudflared/<tunnel-id>.json
 
-# write ~/.cloudflared/config.yml :
-#   tunnel: <voai-tunnel-id-from-create>
-#   credentials-file: /Users/deepeshz2/.cloudflared/<voai-tunnel-id>.json
+# ~/.cloudflared/config.yml :
+#   tunnel: <tunnel-id>
+#   credentials-file: ~/.cloudflared/<tunnel-id>.json
 #   ingress:
 #     - hostname: voai.deepesh-engg.in
 #       service: http://localhost:8095
 #     - service: http_status:404
 
-cloudflared tunnel route dns voai voai.deepesh-engg.in   # ⚠️ THE PUBLIC CUTOVER
-cloudflared service install            # run the tunnel as a launchd service (on boot)
+cloudflared tunnel route dns voai voai.deepesh-engg.in   # points the public hostname at this tunnel
+
+# run the tunnel always-on. Either supervise it with pm2 (no sudo):
+pm2 start cloudflared --name voai-tunnel -- tunnel run voai && pm2 save
+# …or install it as a launchd service:  cloudflared service install
 ```
 
-`route dns` repoints `voai.deepesh-engg.in` from the air's tunnel to the MBP's — this is the
-moment traffic shifts. Cloudflare DNS propagates in seconds.
+`route dns` is the public cutover — Cloudflare DNS propagates in seconds.
 
-## Phase 5 — verify + decommission on the air
+## Phase 5 — verify
 
 ```bash
-# from anywhere:
-curl -s https://voai.deepesh-engg.in/health      # now served by the MBP
-
-# then on the AIR, retire its voai role:
-#  1) remove the `voai.deepesh-engg.in` ingress block from ~/.cloudflared/config.yml
-#  2) restart its cloudflared (the other hostnames keep working)
-#  3) stop the local app:  kill the node process on :8095  (use the specific PID)
-#  4) (optional) the local Postgres can stay for dev; prod no longer depends on it
+curl -s https://voai.deepesh-engg.in/health      # 200, served via the tunnel
 ```
 
 ## Rollback
 
-DNS-only: `cloudflared tunnel route dns <air-tunnel> voai.deepesh-engg.in` from the air points
-the hostname back, and re-start the air's app. The air's app + DB are untouched until you
-choose to stop them, so rollback is just a DNS flip.
+It's DNS-only: re-point `cloudflared tunnel route dns <other-tunnel> voai.deepesh-engg.in` and the
+hostname flips back. The app + DB on the old host stay untouched until you stop them.
 
 ## Notes
 
-- **Alternative DB:** instead of local Postgres on the MBP you could use a managed cloud
-  Postgres (Neon/Supabase free tier) and set `DATABASE_URL` to it — then neither laptop holds
-  state. Heavier setup; local-on-MBP matches the "host it at home" intent and is in this runbook.
-- **API token:** the `.env` you copied already contains `API_AUTH_TOKEN`, so the embedded +
-  standalone dashboard keep working with no change.
-- **Re-dump if data changed:** if calls come in on the air before cutover, re-run the v17
-  `pg_dump` and re-Taildrop before Phase 2.
+- **Alternative DB:** a managed cloud Postgres (Neon/Supabase free tier) in `DATABASE_URL` means no
+  laptop holds state — heavier setup, but fully host-independent.
+- **API token:** the copied `.env` already has `API_AUTH_TOKEN`, so the dashboard authenticates
+  with no extra step.
+- **Index.html caching:** the server reads `index.html` once at boot to inject the API token, so
+  after a `web` rebuild, `pm2 restart voai` to pick up the new bundle.

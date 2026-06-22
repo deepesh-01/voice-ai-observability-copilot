@@ -1,12 +1,12 @@
-# Session S-017 — 2026-06-21 — Embed verified, API auth, R2.1a, public repo, prod moved to home MBP
+# Session S-017 — 2026-06-21 — Embed verified, API auth, R2.1a, public repo, prod moved to always-on host
 
 ## Goal
 
 Close the remaining integration + hardening + deliverable gaps surfaced by re-checking the
 brief against the PRD: actually **embed the dashboard inside HighLevel** (not just "designed"),
 **authenticate the read API**, push a **public GitHub repo (D1)**, pin the real-time requirement
-that was implicit (**R2.1a**), and **move the prod origin off the traveling laptop** onto the
-always-on home MacBook Pro.
+that was implicit (**R2.1a**), and **move the prod origin off the traveling laptop** onto an
+always-on home machine.
 
 ## Done
 
@@ -34,22 +34,22 @@ always-on home MacBook Pro.
 - Created **https://github.com/deepesh-01/voice-ai-observability-copilot** (now **public**),
   `origin` set, `main` tracking + pushed. Secret-scan clean before push (`.env` gitignored).
 
-### Prod origin moved to the always-on home MacBook Pro
-- Drove the whole migration over **Tailscale SSH** (`deepesh@deepeshs-macbook-pro`); files moved via
-  **Taildrop** (no SSH for transfer). Architecture: app + dedicated cloudflared tunnel both under
-  **pm2**, local Postgres on the MBP, only `voai`'s DNS re-pointed (the air's `main` tunnel + other
-  sites untouched).
-- **DB migrated** (pg_dump 17 → restore into MBP Postgres **16**, stripping the lone pg17-only
-  `SET transaction_timeout`); role `deepeshz2` created so `.env` is unchanged. Counts match
+### Prod origin moved to an always-on home machine
+- Drove the whole migration over **Tailscale SSH**; files moved via **Taildrop** (no SSH for
+  transfer). Architecture: app + dedicated cloudflared tunnel both under **pm2**, local Postgres on
+  the always-on host, only `voai`'s DNS re-pointed (the source machine's other tunnel + sites
+  untouched).
+- **DB migrated** (pg_dump 17 → restore into host Postgres **16**, stripping the lone pg17-only
+  `SET transaction_timeout`); the `DATABASE_URL` role recreated so `.env` is unchanged. Counts match
   (raw_call=16, analysis=16, lead=16, kpi=96, oauth_tokens=1).
-- New tunnel **`voai-mbp`** (`e599777d-…`), `--overwrite-dns` cutover. Proved the cutover by stopping
-  the air's app — `voai` kept serving. Full app verified embedded + standalone from the MBP, `/api`
+- New dedicated tunnel, `--overwrite-dns` cutover. Proved the cutover by stopping the source
+  machine's app — `voai` kept serving. Full app verified embedded + standalone from the host, `/api`
   auth clean. Runbook: `docs/deploy-home-mbp.md` (executed). Secrets cleaned from staging both sides.
 
 ## Decisions
 
 - No new ADRs. Embed/auth/migration are operational + component choices; logged in the ledger +
-  the deploy runbook. (ADR-0004 hosting is effectively amended by the MBP move — noted in the runbook.)
+  the deploy runbook. (ADR-0004 hosting is effectively amended by the host move — noted in the runbook.)
 
 ## Assumptions touched
 
@@ -61,6 +61,6 @@ always-on home MacBook Pro.
 **Record the D2 demo (2–5 min)** — the last outstanding deliverable. Open the Copilot from inside the
 HighLevel sub-account (sidebar Custom Menu Link), then walk the loop: overview → agent (KPI profile +
 recommendations) → call (Lead & Outcome + transcript Use Actions) → highlight a recommendation. The
-embedded view proves R1.2/E1; the loop proves E2. (Loom.) Then optional cleanups: run the MBP
-**`pm2 startup` sudo** line for reboot-persistence (user deferred), and remove the air's now-dead
-`voai` cloudflared ingress block.
+embedded view proves R1.2/E1; the loop proves E2. (Loom.) Then optional cleanups: run the host's
+**`pm2 startup` sudo** line for reboot-persistence (user deferred), and remove the source machine's
+now-dead `voai` cloudflared ingress block.

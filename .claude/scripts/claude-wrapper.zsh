@@ -7,7 +7,7 @@
 # on every invocation — so you can change the close behavior with no shell reload.
 #
 # Install (one line in ~/.zshrc), then reload once with `exec zsh`:
-#   source /Users/deepeshz2/Documents/highlevel-assignment/.claude/scripts/claude-wrapper.zsh
+#   source /path/to/highlevel-assignment/.claude/scripts/claude-wrapper.zsh
 
 # Directory of this file, resolved at source time (so the shim can find its sibling script).
 _CLAUDE_WRAP_DIR="${0:A:h}"
