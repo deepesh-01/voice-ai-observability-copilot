@@ -29,6 +29,7 @@ See [`requirements.md`](./requirements.md) for the full, ID'd requirement breakd
 | Path | Purpose |
 |------|---------|
 | [`requirements.md`](./requirements.md) | Verbatim requirements from the brief, broken into traceable IDs (`R1.1`, `D2`, `E3`, …). The root all decisions trace back to. |
+| [`CODE-WALKTHROUGH.md`](./CODE-WALKTHROUGH.md) | **Complete file-by-file code walkthrough** — every backend + frontend module: what it does, why, traced to ADRs. Start here to understand the code. |
 | [`decisions/`](./decisions/) | **Architecture Decision Records (ADRs).** One file per significant decision: context, options compared, choice, rationale, requirement traced. |
 | [`sessions/`](./sessions/) | **Session logs.** One file per working session: what was done, what was decided, what's next. The chronological narrative. |
 | [`assumptions-and-product-calls.md`](./assumptions-and-product-calls.md) | Register of every assumption, product call, and guess — each with status (assumed / validated / invalidated). |
