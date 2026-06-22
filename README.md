@@ -18,6 +18,10 @@ Claude (Opus)** for analysis · embedded via a **HighLevel Marketplace App** (Cu
 
 ## Architecture
 
+> **Subsystem deep-dives:** [`server/README.md`](./server/README.md) — backend (HTTP surfaces,
+> the ingest→score→persist pipeline, the webhook sequence diagram, the Postgres data model) ·
+> [`web/README.md`](./web/README.md) — frontend (view-state machine, typed API client, craft layer).
+
 The system closes one loop — **raw call → KPI scores → recommendations** — end to end on
 real HighLevel data:
 

@@ -55,6 +55,41 @@ raw call ─▶ rawCallRepo.saveRaw()         # 1. source-of-record FIRST (survi
 The webhook handler acks **202 in ~30ms** then ingests asynchronously (GHL retries slow handlers;
 an in-flight set + idempotent `analysisRepo.has()` dedupe retries).
 
+#### Webhook call sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant GHL as HighLevel (Voice AI)
+    participant API as POST /webhooks/ghl/voice-ai
+    participant SIG as verifyGhl (Ed25519)
+    participant ING as ingestRawCall
+    participant LLM as Claude (Opus, Agent SDK)
+    participant DB as Postgres
+    participant UI as Dashboard
+
+    GHL->>API: VoiceAiCallEnd (body + x-ghl-signature)
+    API->>SIG: verify(rawBody, signature)
+    alt invalid & WEBHOOK_REQUIRE_SIGNATURE
+        SIG-->>API: ✗
+        API-->>GHL: 401 Unauthorized
+    else verified (or not required)
+        SIG-->>API: ✓
+        API-->>GHL: 202 Accepted (~30ms — ack before work)
+        Note over API,ING: handler returns; ingest runs async
+        ING->>DB: saveRaw() → raw_call (source-of-record)
+        ING->>DB: has(callId)? (idempotent dedupe; stop if seen)
+        ING->>GHL: getAgentPrompt(agentId) — goal / script
+        ING->>LLM: scoreCall(transcript, goal)
+        LLM-->>ING: CallAnalysis (KPIs · deviations · Use Actions)
+        ING->>DB: save() → call_analysis + call_kpi
+        ING->>LLM: extractLead(transcript) — facts + signals
+        ING->>GHL: getContact(contactId) — authoritative identity
+        ING->>DB: saveLead() → call_lead (source = ghl | llm)
+    end
+    UI->>DB: GET /api/* (token-guarded) — reads the scored data
+```
+
 ### Recommendations (on demand)
 
 `analysis/recommend.ts` gathers an agent's stored analyses + KPI averages and runs an Opus
