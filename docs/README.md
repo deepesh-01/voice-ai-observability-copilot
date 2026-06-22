@@ -36,6 +36,7 @@ See [`requirements.md`](./requirements.md) for the full, ID'd requirement breakd
 | [`functional-vs-mocked.md`](./functional-vs-mocked.md) | Living ledger of what is **real** vs **mocked** — a required deliverable (D3.1). |
 | [`ux-changelog.md`](./ux-changelog.md) | Living list of UI/UX changes & fixes (Design discipline), each traced to E1. |
 | [`team-of-one.md`](./team-of-one.md) | How a single builder owns Product, Design, Engineering & QA — required deliverable (D3). |
+| [`../server/README.md`](../server/README.md) · [`../web/README.md`](../web/README.md) | **Subsystem architecture deep-dives.** Backend incl. the [**webhook sequence diagram**](../server/README.md#webhook-call-sequence) + [Postgres schema](../server/src/db/SCHEMA.md); frontend incl. the view-state machine + typed API client. |
 
 ---
 
