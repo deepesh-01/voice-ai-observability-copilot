@@ -64,7 +64,8 @@ calls arrive). Served at `GET /api/recommendations`.
 ### Persistence (Postgres, no ORM)
 
 Hand-written SQL through a `pg` pool (`db/pool.ts`, schema created on boot). Swappable repository
-interfaces (`store/*`) keep storage behind a seam:
+interfaces (`store/*`) keep storage behind a seam. **Full table-by-table reference:
+[`src/db/SCHEMA.md`](./src/db/SCHEMA.md).**
 
 | Table | Owner | Holds |
 |-------|-------|-------|
