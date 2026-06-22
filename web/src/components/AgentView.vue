@@ -24,8 +24,6 @@ import KpiBar from './KpiBar.vue';
 const props = defineProps<{
   locationId: string;
   agentId: string;
-  /** Bumped by the header Refresh button → re-fetch in place (non-destructive). */
-  refreshSignal?: number;
 }>();
 
 const emit = defineEmits<{
@@ -78,15 +76,21 @@ async function loadMain(silent = false) {
   }
 }
 
-async function loadRecommendations(force = false) {
-  if (recsLoaded.value && !force) return;
+/**
+ * `reload` re-fetches (bypasses the once-per-session guard); `force` bypasses the SERVER
+ * cache and re-runs Opus. The Refresh button passes only `reload` — the server returns the
+ * cached synthesis when the agent's call count is unchanged, so it re-synthesizes (and spends
+ * tokens) ONLY when there are genuinely new calls. `force` is reserved (scripts), not the UI.
+ */
+async function loadRecommendations(opts: { reload?: boolean; force?: boolean } = {}) {
+  if (recsLoaded.value && !opts.reload && !opts.force) return;
   loadingRecs.value = true;
   errorRecs.value = null;
   try {
     const data = await fetchRecommendations({
       locationId: props.locationId,
       agentId: props.agentId,
-      refresh: force,
+      refresh: opts.force === true,
     });
     recommendations.value = data;
     recsLoaded.value = true;
@@ -112,8 +116,10 @@ watch(() => [props.locationId, props.agentId], () => {
   loadRecommendations();
 });
 
-// Refresh: reload the main data silently in place; keep filters + recommendations.
-watch(() => props.refreshSignal, () => loadMain(true));
+// Header Refresh calls this — silent reload of the main data in place (App shows the
+// spinner + toast). Recommendations are NOT re-synthesized here (no surprise Opus spend);
+// they have their own cache-aware Refresh button.
+defineExpose({ reload: () => loadMain(true) });
 
 // ── Computed ──────────────────────────────────────────────────────────────────
 
@@ -236,8 +242,8 @@ function kindLabel(kind: string): string {
           <button
             v-else-if="recommendations"
             class="recs-refresh"
-            title="Re-run the synthesis (cached otherwise; auto-refreshes when new calls arrive)"
-            @click="loadRecommendations(true)"
+            title="Re-check — re-synthesizes (and uses Opus) only when there are new calls; cached otherwise"
+            @click="loadRecommendations({ reload: true })"
           >↻ Refresh</button>
         </div>
 
@@ -252,7 +258,7 @@ function kindLabel(kind: string): string {
           <div class="state-block-icon">!</div>
           <h3>Could not load recommendations</h3>
           <p>{{ errorRecs }}</p>
-          <button class="btn" @click="loadRecommendations(true)">Retry</button>
+          <button class="btn" @click="loadRecommendations({ reload: true })">Retry</button>
         </div>
 
         <template v-else-if="recommendations">

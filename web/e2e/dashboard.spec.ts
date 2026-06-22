@@ -82,6 +82,9 @@ test.describe('drill-down + recommendations (R2.5/R2.6 · UX-002/003)', () => {
     await expect(page.getByRole('heading', { name: 'Transcript' })).toBeVisible();
     // Hitting Refresh deep in the call view must NOT bounce back to the overview.
     await page.getByRole('button', { name: /Refresh/ }).click();
+    // Visible feedback: button shows a spinner, then a "Refreshed" toast confirms.
+    await expect(page.locator('.btn-spinner')).toBeVisible();
+    await expect(page.locator('.toast')).toHaveText('Refreshed');
     await expect(page.getByRole('heading', { name: 'Transcript' })).toBeVisible();
     await expect(page.getByText('Calls analyzed')).toHaveCount(0);
   });

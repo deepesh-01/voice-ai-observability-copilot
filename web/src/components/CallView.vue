@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import {
   bookingStatusClass,
   bookingStatusLabel,
@@ -24,8 +24,6 @@ const props = defineProps<{
   callId: string;
   /** Back context label for the back button */
   backLabel?: string;
-  /** Bumped by the header Refresh button → re-fetch in place (non-destructive). */
-  refreshSignal?: number;
 }>();
 
 const emit = defineEmits<{
@@ -67,7 +65,8 @@ async function load(silent = false) {
 }
 
 onMounted(() => load());
-watch(() => props.refreshSignal, () => load(true));
+// Header Refresh calls this — silent in-place reload (App shows the spinner + toast).
+defineExpose({ reload: () => load(true) });
 
 // ── Derived ───────────────────────────────────────────────────────────────────
 

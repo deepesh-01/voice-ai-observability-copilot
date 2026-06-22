@@ -92,12 +92,38 @@ async function loadInstalls() {
   }
 }
 
-// Bumped to ask the active view to re-fetch its data in place. Non-destructive:
-// it does NOT reset navigation, filters, or scroll — you stay where you are.
-const refreshSignal = ref(0);
+// The active view exposes reload() (defineExpose). Refresh re-fetches its data in
+// place — non-destructive (keeps navigation, filters, scroll) — and the button shows
+// a real spinner for the duration so it never looks dead. Recommendations are NOT
+// re-synthesized here (no surprise Opus spend).
+const viewRef = ref<{ reload?: () => Promise<void> } | null>(null);
+const refreshing = ref(false);
 
-function refresh() {
-  refreshSignal.value += 1;
+// Lightweight toast (used to confirm a silent refresh landed).
+const toast = ref<string | null>(null);
+let toastTimer: ReturnType<typeof setTimeout> | undefined;
+function showToast(msg: string) {
+  toast.value = msg;
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (toast.value = null), 2000);
+}
+
+async function refresh() {
+  if (refreshing.value) return;
+  refreshing.value = true;
+  try {
+    // Reload runs silently; a min spinner time keeps the button feedback from flickering
+    // on a fast (cached) reload.
+    await Promise.all([
+      viewRef.value?.reload?.() ?? Promise.resolve(),
+      new Promise((r) => setTimeout(r, 450)),
+    ]);
+    showToast('Refreshed');
+  } catch {
+    showToast('Refresh failed');
+  } finally {
+    refreshing.value = false;
+  }
 }
 
 onMounted(loadInstalls);
@@ -145,8 +171,9 @@ function jumpToBreadcrumb(index: number) {
         <div class="header-actions">
           <!-- Connections demoted to a corner icon → opens a modal with the details. -->
           <ConnectionsPanel :installs="installs" :backend-ok="backendOk" />
-          <button class="btn ghost" title="Reload this view's data" @click="refresh">
-            ↻ Refresh
+          <button class="btn ghost" :disabled="refreshing" title="Reload this view's data" @click="refresh">
+            <span v-if="refreshing" class="btn-spinner"></span>
+            {{ refreshing ? 'Refreshing…' : '↻ Refresh' }}
           </button>
         </div>
       </div>
@@ -212,35 +239,42 @@ function jumpToBreadcrumb(index: number) {
                and its transform would trap the fixed .page-loader inside it. -->
           <OverviewView
             v-if="currentView.kind === 'overview'"
+            ref="viewRef"
             :key="locationId"
             :location-id="locationId"
-            :refresh-signal="refreshSignal"
             @select-agent="selectAgent"
           />
 
           <AgentView
             v-else-if="currentView.kind === 'agent'"
+            ref="viewRef"
             :key="`agent-${currentView.agentId}`"
             class="view-enter"
             :location-id="locationId"
             :agent-id="currentView.agentId"
-            :refresh-signal="refreshSignal"
             @back="backFromAgent"
             @select-call="selectCall"
           />
 
           <CallView
             v-else-if="currentView.kind === 'call'"
+            ref="viewRef"
             :key="`call-${currentView.callId}`"
             class="view-enter"
             :call-id="currentView.callId"
             :back-label="backLabelForCall"
-            :refresh-signal="refreshSignal"
             @back="backFromCall"
           />
         </div>
       </template>
     </template>
+
+    <!-- Refresh confirmation toast -->
+    <Teleport to="body">
+      <Transition name="toast">
+        <div v-if="toast" class="toast" role="status" aria-live="polite">{{ toast }}</div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -252,7 +286,29 @@ function jumpToBreadcrumb(index: number) {
   padding: 8px 14px; border-radius: 8px; font-size: 14px; border: none; cursor: pointer; font-family: inherit; }
 .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .btn.ghost { background: #fff; color: var(--accent); border: 1px solid var(--border); }
-.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn:disabled { opacity: 0.7; cursor: default; }
+
+/* Refresh button inline spinner */
+.btn-spinner {
+  display: inline-block; width: 12px; height: 12px; vertical-align: -1px; margin-right: 4px;
+  border: 2px solid #cbd5e1; border-top-color: var(--accent); border-radius: 50%;
+  animation: btn-spin 0.7s linear infinite;
+}
+@keyframes btn-spin { to { transform: rotate(360deg); } }
+
+/* Toast — confirms a silent refresh landed */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--text); color: #fff; padding: 9px 16px; border-radius: 10px;
+  font-size: 13px; font-weight: 600; letter-spacing: 0.01em; z-index: 60;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+}
+.toast-enter-active, .toast-leave-active { transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out); }
+.toast-enter-from, .toast-leave-to { opacity: 0; transform: translateX(-50%) translateY(8px); }
+@media (prefers-reduced-motion: reduce) {
+  .toast-enter-from, .toast-leave-to { transform: translateX(-50%); }
+  .btn-spinner { animation-duration: 1.2s; }
+}
 
 .location-picker {
   display: flex;

@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { deriveAgents, fetchAnalyses, fetchKpiAverages, fetchLeads, scoreClass, scoreColor, shortId, UNASSIGNED_AGENT, type AgentSummary, type CallLead } from '../api';
 import { ensureAgents, displayName } from '../agents';
 import KpiBar from './KpiBar.vue';
 
 const props = defineProps<{
   locationId: string;
-  /** Bumped by the header Refresh button → re-fetch in place (non-destructive). */
-  refreshSignal?: number;
 }>();
 
 const emit = defineEmits<{
@@ -45,7 +43,8 @@ async function load(silent = false) {
 }
 
 onMounted(() => load());
-watch(() => props.refreshSignal, () => load(true));
+// Header Refresh calls this — silent in-place reload (App shows the spinner + toast).
+defineExpose({ reload: () => load(true) });
 
 const overallAvg = computed(() => {
   if (!agents.value.length) return null;
