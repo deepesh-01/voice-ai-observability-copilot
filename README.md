@@ -108,9 +108,9 @@ Honesty here is graded (D3.1, E2). Full living ledger:
 
 | Path | What |
 |------|------|
-| `server/` | Express backend: GHL OAuth (tokens in Postgres), ingestion, analysis pipeline, recommendations, REST API |
+| `server/` | Express backend: GHL OAuth (tokens in Postgres), ingestion, analysis pipeline, recommendations, REST API — **architecture: [`server/README.md`](./server/README.md)** |
 | `server/analysis/` | The observability brain: `transcript` → `kpis` → `score` → `recommend` |
-| `web/` | Vue 3 dashboard, embedded in HighLevel |
+| `web/` | Vue 3 dashboard, embedded in HighLevel — **architecture: [`web/README.md`](./web/README.md)** |
 | `docs/` | Requirements, ADRs, session logs, assumptions — the source of truth |
 | `.env.example` | Config template (real `.env` is gitignored) |
 
