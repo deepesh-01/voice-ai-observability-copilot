@@ -60,34 +60,34 @@ an in-flight set + idempotent `analysisRepo.has()` dedupe retries).
 ```mermaid
 sequenceDiagram
     autonumber
-    participant GHL as HighLevel (Voice AI)
-    participant API as POST /webhooks/ghl/voice-ai
-    participant SIG as verifyGhl (Ed25519)
+    participant GHL as HighLevel Voice AI
+    participant API as Webhook endpoint
+    participant SIG as Ed25519 verify
     participant ING as ingestRawCall
-    participant LLM as Claude (Opus, Agent SDK)
+    participant LLM as Claude Opus
     participant DB as Postgres
     participant UI as Dashboard
 
-    GHL->>API: VoiceAiCallEnd (body + x-ghl-signature)
+    GHL->>API: POST /webhooks/ghl/voice-ai (body + x-ghl-signature)
     API->>SIG: verify(rawBody, signature)
-    alt invalid & WEBHOOK_REQUIRE_SIGNATURE
-        SIG-->>API: ✗
+    alt invalid and signature required
+        SIG-->>API: invalid
         API-->>GHL: 401 Unauthorized
-    else verified (or not required)
-        SIG-->>API: ✓
-        API-->>GHL: 202 Accepted (~30ms — ack before work)
-        Note over API,ING: handler returns; ingest runs async
-        ING->>DB: saveRaw() → raw_call (source-of-record)
-        ING->>DB: has(callId)? (idempotent dedupe; stop if seen)
-        ING->>GHL: getAgentPrompt(agentId) — goal / script
+    else verified or not required
+        SIG-->>API: ok
+        API-->>GHL: 202 Accepted (~30ms, ack before work)
+        Note over API,ING: handler returns, ingest runs async
+        ING->>DB: saveRaw to raw_call (source-of-record)
+        ING->>DB: has(callId)? idempotent dedupe
+        ING->>GHL: getAgentPrompt for goal/script
         ING->>LLM: scoreCall(transcript, goal)
-        LLM-->>ING: CallAnalysis (KPIs · deviations · Use Actions)
-        ING->>DB: save() → call_analysis + call_kpi
-        ING->>LLM: extractLead(transcript) — facts + signals
-        ING->>GHL: getContact(contactId) — authoritative identity
-        ING->>DB: saveLead() → call_lead (source = ghl | llm)
+        LLM-->>ING: CallAnalysis (KPIs, deviations, Use Actions)
+        ING->>DB: save to call_analysis + call_kpi
+        ING->>LLM: extractLead (facts + signals)
+        ING->>GHL: getContact (authoritative identity)
+        ING->>DB: saveLead to call_lead (source ghl or llm)
     end
-    UI->>DB: GET /api/* (token-guarded) — reads the scored data
+    UI->>DB: GET /api/* token-guarded, reads scored data
 ```
 
 ### Recommendations (on demand)
