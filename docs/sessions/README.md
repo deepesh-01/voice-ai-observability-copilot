@@ -26,6 +26,7 @@ the next action. This is the audit trail that makes a solo "Team of One" build l
 | S-016 | 2026-06-20 | Dashboard lead/signal surfacing (task #12: CallView panel + AgentView badges/filters + Overview counts); full Emil polish; Connections→icon+modal; unified centered loader; non-destructive Refresh | — (UX-010..013) | [session-016.md](./session-016.md) |
 | S-017 | 2026-06-21 | Embed verified inside HighLevel (Custom Page + sidebar, A-001 ✅); read-API bearer auth; R2.1a (real-time flywheel); public GitHub repo (D1); **prod origin moved to an always-on home machine** (pm2 + DB migrate + dedicated tunnel, via Tailscale) | — (R2.1a) | [session-017.md](./session-017.md) |
 | S-018 | 2026-06-22 | **Submission:** Refresh UX fix (silent reload + spinner + toast; cache-aware recs Refresh, no Opus waste); comprehensive docs (server/web READMEs, DB SCHEMA, webhook Mermaid diagram, full CODE-WALKTHROUGH); infra scrub; demo recorded + email sent | — (UX-014) | [session-018.md](./session-018.md) |
+| S-019 | 2026-06-26 | **Interview prep** (non-dev): read codebase end-to-end; design rationale + weaknesses/fixes; predicted extension Qs; Postgres→Mongo map; mock interview + Node internals drill; six study cheat sheets at repo root | — | [session-019.md](./session-019.md) |
 
 ## Session-close practice (always do this before a session ends)
 
