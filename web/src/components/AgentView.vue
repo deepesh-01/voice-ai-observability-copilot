@@ -8,12 +8,15 @@ import {
   fetchKpiAverages,
   fetchLeads,
   fetchRecommendations,
+  previewRecommendation,
+  applyRecommendation,
   formatDuration,
   formatTime,
   kpiLabel,
   scoreClass,
   scoreColor,
   type AgentRecommendations,
+  type RecommendationPreview,
   type CallLead,
   type CallSummary,
   type KpiAverage,
@@ -47,6 +50,19 @@ const loadingRecs = ref(false);
 const errorRecs = ref<string | null>(null);
 const recommendations = ref<AgentRecommendations | null>(null);
 const recsLoaded = ref(false);
+
+// ── Apply-recommendation state ──────────────────────────────────────────────────
+// `previewIndex` = the rec whose prompt change is being generated (button spinner).
+// `preview` = the modal's content (current vs revised prompt) awaiting confirmation.
+// `applying` = the live PATCH is in flight (writes are one-at-a-time, server-serialized).
+// `appliedIndexes` = recs already applied THIS synthesis; once any is applied the rest
+// are disabled until a refresh, since their previews were built on the now-stale prompt.
+const previewIndex = ref<number | null>(null);
+const preview = ref<RecommendationPreview | null>(null);
+const applying = ref(false);
+const applyError = ref<string | null>(null);
+const appliedIndexes = ref<Set<number>>(new Set());
+const applyNotice = ref<string | null>(null);
 
 // ── Data loading ──────────────────────────────────────────────────────────────
 
@@ -94,12 +110,119 @@ async function loadRecommendations(opts: { reload?: boolean; force?: boolean } =
     });
     recommendations.value = data;
     recsLoaded.value = true;
+    // Fresh synthesis reflects the current prompt → previous "applied" flags no longer apply.
+    appliedIndexes.value = new Set();
+    applyNotice.value = null;
   } catch (e) {
     errorRecs.value = e instanceof Error ? e.message : 'Failed to synthesize recommendations.';
   } finally {
     loadingRecs.value = false;
   }
 }
+
+// ── Apply a recommendation to the agent prompt ──────────────────────────────────
+
+/** Step 1: build the revised prompt (Opus) and open the confirm modal. No write. */
+async function openPreview(i: number) {
+  if (applying.value || previewIndex.value !== null) return;
+  applyError.value = null;
+  previewIndex.value = i;
+  try {
+    preview.value = await previewRecommendation({
+      locationId: props.locationId,
+      agentId: props.agentId,
+      index: i,
+    });
+  } catch (e) {
+    applyError.value = e instanceof Error ? e.message : 'Could not build the prompt change.';
+  } finally {
+    previewIndex.value = null;
+  }
+}
+
+function closePreview() {
+  if (applying.value) return; // don't dismiss mid-write
+  preview.value = null;
+  applyError.value = null;
+}
+
+/** Step 2: write the previewed prompt to the live agent (serialized server-side). */
+async function confirmApply() {
+  if (!preview.value || applying.value) return;
+  const current = preview.value;
+  applying.value = true;
+  applyError.value = null;
+  try {
+    const result = await applyRecommendation({
+      locationId: props.locationId,
+      agentId: props.agentId,
+      revisedPrompt: current.revisedPrompt,
+      baselinePrompt: current.currentPrompt,
+    });
+    // The server returns 4xx/5xx (→ throw) on a failed/unverified write; this guards the
+    // 2xx-but-not-ok case so we never claim success the read-back didn't confirm.
+    if (!result.ok) {
+      applyError.value = 'The update could not be verified on the agent. Please try again.';
+      return;
+    }
+    appliedIndexes.value = new Set(appliedIndexes.value).add(current.index);
+    applyNotice.value = `Updated the agent prompt — “${current.recommendation.title}”. Refresh recommendations to apply more.`;
+    preview.value = null;
+  } catch (e) {
+    applyError.value = e instanceof Error ? e.message : 'Failed to update the agent.';
+  } finally {
+    applying.value = false;
+  }
+}
+
+/** Is the Apply button for rec `i` disabled? (a write/preview is busy, or a sibling was applied) */
+function applyDisabled(i: number): boolean {
+  return (
+    applying.value ||
+    previewIndex.value !== null ||
+    appliedIndexes.value.has(i) ||
+    appliedIndexes.value.size > 0
+  );
+}
+
+type DiffRow = { type: 'same' | 'add' | 'del'; text: string };
+
+/** A minimal LCS line-diff — renders the current→revised prompt change in the modal. */
+function lineDiff(before: string, after: string): DiffRow[] {
+  const a = before.split('\n');
+  const b = after.split('\n');
+  const n = a.length;
+  const m = b.length;
+  const dp: number[][] = Array.from({ length: n + 1 }, () => new Array<number>(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--) {
+    for (let j = m - 1; j >= 0; j--) {
+      dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    }
+  }
+  const rows: DiffRow[] = [];
+  let i = 0;
+  let j = 0;
+  while (i < n && j < m) {
+    if (a[i] === b[j]) {
+      rows.push({ type: 'same', text: a[i] });
+      i++;
+      j++;
+    } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+      rows.push({ type: 'del', text: a[i] });
+      i++;
+    } else {
+      rows.push({ type: 'add', text: b[j] });
+      j++;
+    }
+  }
+  while (i < n) rows.push({ type: 'del', text: a[i++] });
+  while (j < m) rows.push({ type: 'add', text: b[j++] });
+  return rows;
+}
+
+const diffRows = computed<DiffRow[]>(() =>
+  preview.value ? lineDiff(preview.value.currentPrompt, preview.value.revisedPrompt) : [],
+);
 
 onMounted(() => {
   loadMain();
@@ -264,6 +387,19 @@ function kindLabel(kind: string): string {
         <template v-else-if="recommendations">
           <p v-if="recommendations.summary" class="recs-summary">{{ recommendations.summary }}</p>
 
+          <!-- Post-apply notice: the prompt changed, so the remaining previews are stale. -->
+          <div v-if="applyNotice" class="apply-notice" role="status">
+            <span class="apply-notice-icon">✓</span>
+            <span class="apply-notice-text">{{ applyNotice }}</span>
+            <button class="btn-sm" @click="loadRecommendations({ reload: true })">Refresh</button>
+          </div>
+
+          <!-- Preview-time error (couldn't build the change). Apply-time errors show in the modal. -->
+          <div v-if="applyError && !preview" class="apply-error" role="alert">
+            <span>{{ applyError }}</span>
+            <button class="apply-error-dismiss" aria-label="Dismiss" @click="applyError = null">×</button>
+          </div>
+
           <div v-if="!recommendations.recommendations.length" class="state-block" style="padding: 24px 0;">
             <div class="state-block-icon">✓</div>
             <h3>No issues found</h3>
@@ -317,6 +453,22 @@ function kindLabel(kind: string): string {
                     </button>
                   </div>
                 </div>
+              </div>
+
+              <div class="rec-actions">
+                <span v-if="appliedIndexes.has(i)" class="rec-applied">✓ Applied to agent</span>
+                <button
+                  v-else
+                  class="btn-apply"
+                  :disabled="applyDisabled(i)"
+                  :title="appliedIndexes.size > 0
+                    ? 'Refresh recommendations before applying another (the prompt has changed)'
+                    : 'Preview this change and update the agent prompt'"
+                  @click="openPreview(i)"
+                >
+                  <span v-if="previewIndex === i" class="spinner"></span>
+                  {{ previewIndex === i ? 'Preparing…' : 'Apply to agent' }}
+                </button>
               </div>
             </div>
           </div>
@@ -396,6 +548,51 @@ function kindLabel(kind: string): string {
         </div>
       </div>
     </template>
+
+    <!-- Apply preview / confirm modal -->
+    <div v-if="preview" class="modal-overlay" @click.self="closePreview">
+      <div class="modal apply-modal" role="dialog" aria-modal="true" aria-labelledby="apply-modal-title">
+        <div class="apply-modal-header">
+          <div>
+            <p class="apply-modal-eyebrow">Apply to agent prompt</p>
+            <h3 id="apply-modal-title">{{ preview.recommendation.title }}</h3>
+          </div>
+          <button class="modal-close" aria-label="Close" :disabled="applying" @click="closePreview">×</button>
+        </div>
+
+        <p class="apply-change-summary">
+          <span class="apply-change-label">Change</span>
+          {{ preview.changeSummary || 'Integrates this recommendation into the agent prompt.' }}
+        </p>
+
+        <div class="apply-diff" aria-label="Prompt changes">
+          <div
+            v-for="(row, di) in diffRows"
+            :key="di"
+            class="diff-row"
+            :class="`diff-row--${row.type}`"
+          >
+            <span class="diff-gutter">{{ row.type === 'add' ? '+' : row.type === 'del' ? '−' : '' }}</span>
+            <span class="diff-text">{{ row.text || ' ' }}</span>
+          </div>
+        </div>
+
+        <p class="apply-warning">
+          This writes the new prompt to the live HighLevel agent. Configured actions are preserved
+          and verified after the write.
+        </p>
+
+        <div v-if="applyError" class="apply-error" role="alert">{{ applyError }}</div>
+
+        <div class="apply-modal-actions">
+          <button class="btn-secondary" :disabled="applying" @click="closePreview">Cancel</button>
+          <button class="btn-apply btn-apply--confirm" :disabled="applying" @click="confirmApply">
+            <span v-if="applying" class="spinner"></span>
+            {{ applying ? 'Updating agent…' : 'Confirm & update agent' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -699,6 +896,101 @@ function kindLabel(kind: string): string {
   padding: 8px 14px; border-radius: 8px; font-size: 14px; border: none; cursor: pointer; font-family: inherit;
 }
 .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ── Apply-recommendation: per-card action, notices, confirm modal + diff ─────── */
+.rec-actions {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border);
+}
+.rec-applied { font-size: 13px; font-weight: 600; color: var(--ok); display: inline-flex; align-items: center; gap: 6px; }
+
+.btn-apply {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--accent); color: #fff; border: none; cursor: pointer; font-family: inherit;
+  padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  transition: background 120ms var(--ease-out), transform 120ms var(--ease-out), opacity 120ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) { .btn-apply:hover:not(:disabled) { background: #1d4ed8; } }
+.btn-apply:active:not(:disabled) { transform: scale(0.97); }
+.btn-apply:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn-apply:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-apply .spinner { border-color: rgba(255, 255, 255, 0.4); border-top-color: #fff; }
+.btn-apply--confirm { padding: 9px 16px; font-size: 14px; }
+
+.btn-secondary {
+  background: none; color: var(--muted); border: 1px solid var(--border); cursor: pointer; font-family: inherit;
+  padding: 9px 16px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  transition: background 120ms var(--ease-out), color 120ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) { .btn-secondary:hover:not(:disabled) { background: #f1f2f4; color: var(--text); } }
+.btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-sm {
+  background: var(--ok); color: #fff; border: none; cursor: pointer; font-family: inherit;
+  padding: 5px 11px; border-radius: 7px; font-size: 12.5px; font-weight: 600; flex-shrink: 0;
+}
+
+.apply-notice {
+  display: flex; align-items: center; gap: 10px;
+  background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px;
+  padding: 10px 12px; margin: 4px 0 14px; font-size: 13px; color: #166534;
+}
+.apply-notice-icon { font-weight: 700; }
+.apply-notice-text { flex: 1; }
+
+.apply-error {
+  display: flex; align-items: center; gap: 10px;
+  background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px;
+  padding: 10px 12px; margin: 4px 0 14px; font-size: 13px; color: #b91c1c;
+}
+.apply-error-dismiss { margin-left: auto; background: none; border: none; color: #b91c1c; font-size: 16px; cursor: pointer; line-height: 1; }
+
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(17, 22, 35, 0.42);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.apply-modal {
+  width: 100%; max-width: 720px; max-height: 86vh; display: flex; flex-direction: column;
+  background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18); overflow: hidden;
+}
+.apply-modal-header {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  padding: 16px 18px; border-bottom: 1px solid var(--border);
+}
+.apply-modal-header h3 { margin: 2px 0 0; font-size: 16px; }
+.apply-modal-eyebrow { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--accent); }
+.modal-close {
+  display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px;
+  border-radius: 7px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px;
+  font-family: inherit; flex-shrink: 0; transition: background 120ms var(--ease-out), color 120ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) { .modal-close:hover:not(:disabled) { background: #f1f2f4; color: var(--text); } }
+.modal-close:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.apply-change-summary { margin: 14px 18px 0; font-size: 13.5px; color: var(--text); }
+.apply-change-label { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-right: 8px; }
+
+.apply-diff {
+  margin: 12px 18px; flex: 1; overflow-y: auto;
+  border: 1px solid var(--border); border-radius: 10px; background: #fbfcfd;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.5;
+}
+.diff-row { display: flex; padding: 0 8px; white-space: pre-wrap; word-break: break-word; }
+.diff-gutter { flex-shrink: 0; width: 14px; text-align: center; color: var(--muted); user-select: none; }
+.diff-text { flex: 1; }
+.diff-row--add { background: #f0fdf4; color: #166534; }
+.diff-row--add .diff-gutter { color: #16a34a; }
+.diff-row--del { background: #fef2f2; color: #b91c1c; }
+.diff-row--del .diff-text { text-decoration: line-through; opacity: 0.8; }
+.diff-row--del .diff-gutter { color: #dc2626; }
+
+.apply-warning { margin: 0 18px; font-size: 12.5px; color: var(--muted); }
+.apply-modal .apply-error { margin: 12px 18px 0; }
+.apply-modal-actions {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 16px 18px; margin-top: 12px; border-top: 1px solid var(--border);
+}
 
 .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border);
   border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; }

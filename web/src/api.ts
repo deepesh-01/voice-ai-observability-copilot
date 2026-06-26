@@ -271,12 +271,33 @@ function apiHeaders(): HeadersInit {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function apiFetch(url: string): Promise<unknown> {
-  const res = await fetch(url, { headers: apiHeaders() });
+async function apiFetch(url: string, options?: RequestInit): Promise<unknown> {
+  const res = await fetch(url, {
+    ...options,
+    headers: { ...apiHeaders(), ...(options?.headers ?? {}) },
+  });
   if (!res.ok) {
-    throw new Error(`API ${res.status} from ${url}: ${await res.text().catch(() => '')}`);
+    // Surface the server's JSON `error` message when present (e.g. 409 conflicts).
+    const body = await res.text().catch(() => '');
+    let detail = body;
+    try {
+      const parsed = JSON.parse(body) as { error?: string };
+      if (parsed?.error) detail = parsed.error;
+    } catch {
+      /* not JSON — use the raw text */
+    }
+    throw new Error(detail || `API ${res.status} from ${url}`);
   }
   return res.json();
+}
+
+/** POST `body` as JSON to a token-guarded API route. */
+function apiPost(url: string, body: unknown): Promise<unknown> {
+  return apiFetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -365,6 +386,77 @@ export async function fetchRecommendations(params: {
       ? (obj.recommendations as Recommendation[])
       : [],
     summary: typeof obj.summary === 'string' ? obj.summary : '',
+  };
+}
+
+/** The Opus-generated revised prompt for one recommendation, plus its before-state. */
+export interface RecommendationPreview {
+  agentId: string;
+  index: number;
+  recommendation: Recommendation;
+  /** The agent's live prompt the revision was built on (the apply baseline). */
+  currentPrompt: string;
+  /** The complete revised prompt to write if the operator confirms. */
+  revisedPrompt: string;
+  /** One-sentence description of what changed. */
+  changeSummary: string;
+}
+
+/**
+ * Step 1 of Apply: ask the server to generate the revised agent prompt for one
+ * recommendation. No write happens — the result is shown for confirmation.
+ */
+export async function previewRecommendation(params: {
+  locationId: string;
+  agentId: string;
+  index: number;
+}): Promise<RecommendationPreview> {
+  const data = await apiPost(
+    `/api/agents/${encodeURIComponent(params.agentId)}/recommendations/${params.index}/preview`,
+    { locationId: params.locationId },
+  );
+  const obj = assertObject(data, 'RecommendationPreview');
+  return {
+    agentId: assertString(obj.agentId ?? params.agentId, 'agentId'),
+    index: typeof obj.index === 'number' ? obj.index : params.index,
+    recommendation: obj.recommendation as Recommendation,
+    currentPrompt: assertString(obj.currentPrompt, 'currentPrompt'),
+    revisedPrompt: assertString(obj.revisedPrompt, 'revisedPrompt'),
+    changeSummary: typeof obj.changeSummary === 'string' ? obj.changeSummary : '',
+  };
+}
+
+export interface ApplyResult {
+  ok: boolean;
+  actionsPreserved: boolean;
+  beforeActions: number;
+  afterActions: number;
+  updatedPrompt: string;
+}
+
+/**
+ * Step 2 of Apply: write the previewed prompt to the live agent. `baselinePrompt`
+ * lets the server reject the write (409) if the agent's prompt changed since preview.
+ * Updates are serialized server-side (one agent write at a time).
+ */
+export async function applyRecommendation(params: {
+  locationId: string;
+  agentId: string;
+  revisedPrompt: string;
+  baselinePrompt: string;
+}): Promise<ApplyResult> {
+  const data = await apiPost(`/api/agents/${encodeURIComponent(params.agentId)}/apply`, {
+    locationId: params.locationId,
+    revisedPrompt: params.revisedPrompt,
+    baselinePrompt: params.baselinePrompt,
+  });
+  const obj = assertObject(data, 'ApplyResult');
+  return {
+    ok: obj.ok === true,
+    actionsPreserved: obj.actionsPreserved !== false,
+    beforeActions: Number(obj.beforeActions ?? 0),
+    afterActions: Number(obj.afterActions ?? 0),
+    updatedPrompt: typeof obj.updatedPrompt === 'string' ? obj.updatedPrompt : '',
   };
 }
 

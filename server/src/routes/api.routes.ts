@@ -1,12 +1,30 @@
 import { Router } from 'express';
 import { listInstalls } from '../store/tokenStore.js';
-import { listCallLogs, getCallLog, checkConnection, listAgents } from '../ghl/api.js';
+import {
+  listCallLogs,
+  getCallLog,
+  checkConnection,
+  listAgents,
+  getAgentPrompt,
+  updateAgentPrompt,
+  PromptConflictError,
+} from '../ghl/api.js';
 import { analysisRepo } from '../store/analysisRepository.js';
 import { leadRepo } from '../store/leadRepository.js';
 import { recommendForAgent } from '../analysis/recommend.js';
+import { revisePromptForRecommendation } from '../analysis/applyRecommendation.js';
+import { createMutex } from '../util/mutex.js';
 import type { BookingStatus } from '../analysis/types.js';
 
 export const apiRouter = Router();
+
+/**
+ * Serializes live agent writes: every PATCH goes through this mutex so two "Apply"
+ * requests can never update an agent in parallel (the brief's one-at-a-time rule).
+ * Process-local — fine for the single-instance deployment; a multi-instance setup
+ * would move this to a DB advisory lock.
+ */
+const agentWriteLock = createMutex();
 
 const str = (v: unknown): string | undefined => (typeof v === 'string' && v ? v : undefined);
 const bool = (v: unknown): boolean | undefined => (v === '1' || v === 'true' ? true : undefined);
@@ -133,6 +151,99 @@ apiRouter.get('/recommendations', async (req, res) => {
     res.json(report);
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : 'recommendation error' });
+  }
+});
+
+/**
+ * Preview applying ONE recommendation to the agent's prompt (R2.5 / A-012, step 1).
+ * Fetches the (cached) recommendation by index, reads the agent's live prompt, and
+ * runs the Opus merge to produce the complete revised prompt — NO write happens here.
+ * The dashboard shows the before/after for the operator to confirm.
+ */
+apiRouter.post('/agents/:agentId/recommendations/:index/preview', async (req, res) => {
+  const agentId = req.params.agentId;
+  const locationId = str(req.body?.locationId) ?? str(req.query.locationId);
+  const index = Number(req.params.index);
+  if (!locationId) {
+    res.status(400).json({ error: 'locationId is required.' });
+    return;
+  }
+  if (!Number.isInteger(index) || index < 0) {
+    res.status(400).json({ error: 'index must be a non-negative integer.' });
+    return;
+  }
+  try {
+    const report = await recommendForAgent({ locationId, agentId });
+    const rec = report.recommendations[index];
+    if (!rec) {
+      res.status(404).json({ error: `No recommendation at index ${index} for this agent.` });
+      return;
+    }
+    const currentPrompt = (await getAgentPrompt(agentId, locationId)) ?? '';
+    if (!currentPrompt.trim()) {
+      res.status(409).json({ error: 'This agent has no editable prompt to update.' });
+      return;
+    }
+    const revised = await revisePromptForRecommendation({ currentPrompt, recommendation: rec });
+    res.json({ agentId, index, recommendation: rec, currentPrompt, ...revised });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : 'preview error' });
+  }
+});
+
+/**
+ * Apply a previewed prompt to the agent (R2.5 / A-012, step 2) — the actual write.
+ * Serialized via `agentWriteLock` (one agent update at a time). `baselinePrompt` is
+ * the prompt the preview was built on; if the live prompt has since changed we 409
+ * rather than clobber the newer edit. Aborts (500) if the PATCH would drop actions.
+ */
+apiRouter.post('/agents/:agentId/apply', async (req, res) => {
+  const agentId = req.params.agentId;
+  const locationId = str(req.body?.locationId);
+  const revisedPrompt = typeof req.body?.revisedPrompt === 'string' ? req.body.revisedPrompt : '';
+  // Required (fail closed): without the baseline we can't guard against a stale
+  // overwrite, so we refuse rather than do a blind unconditional write.
+  const baselinePrompt =
+    typeof req.body?.baselinePrompt === 'string' ? req.body.baselinePrompt : undefined;
+  if (!locationId) {
+    res.status(400).json({ error: 'locationId is required.' });
+    return;
+  }
+  if (!revisedPrompt.trim()) {
+    res.status(400).json({ error: 'revisedPrompt is required.' });
+    return;
+  }
+  if (baselinePrompt === undefined) {
+    res.status(400).json({ error: 'baselinePrompt is required (the prompt the change was previewed against).' });
+    return;
+  }
+  try {
+    const result = await agentWriteLock.run(() =>
+      updateAgentPrompt(agentId, locationId, revisedPrompt, baselinePrompt),
+    );
+    if (!result.actionsPreserved) {
+      // The PATCH already executed (it merges, per S-012) but the action count moved —
+      // surface it honestly; a pre-write backup was logged server-side for recovery.
+      res.status(502).json({
+        error: `The prompt was written, but the agent's configured actions changed (${result.beforeActions} → ${result.afterActions}) and may need restoring from the server logs.`,
+        ...result,
+      });
+      return;
+    }
+    if (!result.ok) {
+      res.status(502).json({
+        error: 'HighLevel accepted the update but the prompt did not change on read-back. Please try again.',
+        ...result,
+      });
+      return;
+    }
+    res.json({ agentId, ...result });
+  } catch (err) {
+    if (err instanceof PromptConflictError) {
+      res.status(409).json({ error: err.message });
+      return;
+    }
+    res.status(502).json({ error: err instanceof Error ? err.message : 'agent update error' });
   }
 });
 

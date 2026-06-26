@@ -47,11 +47,16 @@ export const config = {
    * Space-separated OAuth scopes. These MUST be a subset of the scopes enabled on the app
    * in the Marketplace portal, or chooselocation rejects the request. Confirm the exact
    * Voice AI scope name in the portal dropdown (tracked as assumption A-007).
+   *
+   * `voice-ai-agents.write` is what lets the dashboard's "Apply" action PATCH an agent's
+   * prompt (S-012); without it the write returns 401/403 ("missing scope"). Reads work fine
+   * on the readonly scopes alone.
    */
   scopes: (
     process.env.SCOPES ??
-    'voice-ai-dashboard.readonly voice-ai-agents.readonly voice-ai-agent-goals.readonly ' +
-      'conversations.readonly conversations/message.readonly conversation-ai.readonly'
+    'voice-ai-dashboard.readonly voice-ai-agents.readonly voice-ai-agents.write ' +
+      'voice-ai-agent-goals.readonly conversations.readonly conversations/message.readonly ' +
+      'conversation-ai.readonly'
   ).trim(),
   /**
    * Claude access for the scoring pipeline goes through the Claude Agent SDK, which
