@@ -457,18 +457,22 @@ function kindLabel(kind: string): string {
 
               <div class="rec-actions">
                 <span v-if="appliedIndexes.has(i)" class="rec-applied">✓ Applied to agent</span>
-                <button
-                  v-else
-                  class="btn-apply"
-                  :disabled="applyDisabled(i)"
-                  :title="appliedIndexes.size > 0
-                    ? 'Refresh recommendations before applying another (the prompt has changed)'
-                    : 'Preview this change and update the agent prompt'"
-                  @click="openPreview(i)"
-                >
-                  <span v-if="previewIndex === i" class="spinner"></span>
-                  {{ previewIndex === i ? 'Preparing…' : 'Apply to agent' }}
-                </button>
+                <template v-else>
+                  <span v-if="previewIndex === i" class="rec-wait">
+                    Generating the revised prompt — usually ~20–30s
+                  </span>
+                  <button
+                    class="btn-apply"
+                    :disabled="applyDisabled(i)"
+                    :title="appliedIndexes.size > 0
+                      ? 'Refresh recommendations before applying another (the prompt has changed)'
+                      : 'Preview this change, then update the agent prompt'"
+                    @click="openPreview(i)"
+                  >
+                    <span v-if="previewIndex === i" class="spinner"></span>
+                    {{ previewIndex === i ? 'Preparing… (~20–30s)' : 'Apply to agent' }}
+                  </button>
+                </template>
               </div>
             </div>
           </div>
@@ -549,7 +553,10 @@ function kindLabel(kind: string): string {
       </div>
     </template>
 
-    <!-- Apply preview / confirm modal -->
+    <!-- Apply preview / confirm modal. Teleported to <body> so the fixed overlay centers on the
+         viewport, not a transformed ancestor (the view-enter/stagger animations create a
+         containing block that would otherwise trap position:fixed). -->
+    <Teleport to="body">
     <div v-if="preview" class="modal-overlay" @click.self="closePreview">
       <div class="modal apply-modal" role="dialog" aria-modal="true" aria-labelledby="apply-modal-title">
         <div class="apply-modal-header">
@@ -593,6 +600,7 @@ function kindLabel(kind: string): string {
         </div>
       </div>
     </div>
+    </Teleport>
   </div>
 </template>
 
@@ -899,10 +907,11 @@ function kindLabel(kind: string): string {
 
 /* ── Apply-recommendation: per-card action, notices, confirm modal + diff ─────── */
 .rec-actions {
-  display: flex; justify-content: flex-end; align-items: center;
-  margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border);
+  display: flex; justify-content: flex-end; align-items: center; gap: 10px;
+  padding: 12px 16px; border-top: 1px solid var(--border); background: #fafbfc;
 }
 .rec-applied { font-size: 13px; font-weight: 600; color: var(--ok); display: inline-flex; align-items: center; gap: 6px; }
+.rec-wait { margin-right: auto; font-size: 12px; color: var(--muted); }
 
 .btn-apply {
   display: inline-flex; align-items: center; gap: 7px;
