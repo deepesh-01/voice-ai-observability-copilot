@@ -65,6 +65,12 @@ export interface AnalysisRepository {
   getRecommendations(opts: { locationId: string; agentKey: string }): Promise<{ report: AgentRecommendations; basedOnCalls: number } | null>;
   /** Upsert the cached recommendation report for an agent key. */
   saveRecommendations(opts: { locationId: string; agentKey: string; basedOnCalls: number; report: AgentRecommendations }): Promise<void>;
+  /**
+   * Mark the recommendation at `index` (in the cached report for this agent key) as applied
+   * to the live agent — persisted so it survives reloads. No-op (returns false) if there's no
+   * cached report or the index is out of range. Keeps `basedOnCalls` so the cache stays valid.
+   */
+  markRecommendationApplied(opts: { locationId: string; agentKey: string; index: number }): Promise<boolean>;
 }
 
 export class PostgresAnalysisRepository implements AnalysisRepository {
@@ -234,6 +240,21 @@ export class PostgresAnalysisRepository implements AnalysisRepository {
          based_on_calls = EXCLUDED.based_on_calls, report = EXCLUDED.report, generated_at = now()`,
       [opts.locationId, opts.agentKey, opts.basedOnCalls, JSON.stringify(opts.report)],
     );
+  }
+
+  async markRecommendationApplied(opts: { locationId: string; agentKey: string; index: number }): Promise<boolean> {
+    const existing = await this.getRecommendations({ locationId: opts.locationId, agentKey: opts.agentKey });
+    const rec = existing?.report.recommendations[opts.index];
+    if (!existing || !rec) return false;
+    rec.applied = true;
+    rec.appliedAt = new Date().toISOString();
+    await this.saveRecommendations({
+      locationId: opts.locationId,
+      agentKey: opts.agentKey,
+      basedOnCalls: existing.basedOnCalls,
+      report: existing.report,
+    });
+    return true;
   }
 }
 

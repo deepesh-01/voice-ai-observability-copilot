@@ -96,6 +96,10 @@ export interface Recommendation {
   rationale: string;
   /** Call ids that evidence the problem (drives "jump to the calls"). */
   evidenceCallIds: string[];
+  /** Set once this fix has been written to the live agent prompt — persisted on the cached report. */
+  applied?: boolean;
+  /** ISO timestamp of when it was applied. */
+  appliedAt?: string;
 }
 
 /** Per-KPI average over an agent's calls — the aggregate the synthesis reasons over. */

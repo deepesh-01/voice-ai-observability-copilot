@@ -205,6 +205,8 @@ apiRouter.post('/agents/:agentId/apply', async (req, res) => {
   // overwrite, so we refuse rather than do a blind unconditional write.
   const baselinePrompt =
     typeof req.body?.baselinePrompt === 'string' ? req.body.baselinePrompt : undefined;
+  // Which recommendation this was (drives the persisted "applied" flag); optional.
+  const index = typeof req.body?.index === 'number' ? req.body.index : undefined;
   if (!locationId) {
     res.status(400).json({ error: 'locationId is required.' });
     return;
@@ -237,7 +239,13 @@ apiRouter.post('/agents/:agentId/apply', async (req, res) => {
       });
       return;
     }
-    res.json({ agentId, ...result });
+    // Persist the applied flag on the cached report so it survives reloads (best-effort).
+    if (index !== undefined) {
+      await analysisRepo
+        .markRecommendationApplied({ locationId, agentKey: agentId, index })
+        .catch(() => undefined);
+    }
+    res.json({ agentId, applied: index !== undefined, ...result });
   } catch (err) {
     if (err instanceof PromptConflictError) {
       res.status(409).json({ error: err.message });

@@ -124,4 +124,38 @@ run('PostgresAnalysisRepository (integration)', () => {
 
     expect(await repo.getRecommendations({ locationId: LOC, agentKey: 'nope' })).toBeNull();
   });
+
+  it('persists the applied flag on a recommendation without bumping basedOnCalls', async () => {
+    const rec = (title: string) => ({
+      title,
+      kind: 'prompt' as const,
+      priority: 'high' as const,
+      kpi: 'info_capture' as const,
+      problem: 'p',
+      fix: 'f',
+      rationale: 'r',
+      evidenceCallIds: [],
+    });
+    const report = {
+      agentId: 'agentB',
+      callsAnalyzed: 4,
+      kpiAverages: [],
+      recommendations: [rec('first'), rec('second')],
+      summary: 's',
+    };
+    await repo.saveRecommendations({ locationId: LOC, agentKey: 'agentB', basedOnCalls: 4, report });
+
+    const marked = await repo.markRecommendationApplied({ locationId: LOC, agentKey: 'agentB', index: 1 });
+    expect(marked).toBe(true);
+
+    const got = await repo.getRecommendations({ locationId: LOC, agentKey: 'agentB' });
+    expect(got?.basedOnCalls).toBe(4); // unchanged → cache stays valid
+    expect(got?.report.recommendations[0].applied).toBeFalsy();
+    expect(got?.report.recommendations[1].applied).toBe(true);
+    expect(typeof got?.report.recommendations[1].appliedAt).toBe('string');
+
+    // Out-of-range index and missing report are no-ops.
+    expect(await repo.markRecommendationApplied({ locationId: LOC, agentKey: 'agentB', index: 9 })).toBe(false);
+    expect(await repo.markRecommendationApplied({ locationId: LOC, agentKey: 'nope', index: 0 })).toBe(false);
+  });
 });

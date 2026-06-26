@@ -65,6 +65,9 @@ export interface Recommendation {
   fix: string;
   rationale: string;
   evidenceCallIds: string[];
+  /** True once this fix has been written to the live agent (persisted on the server). */
+  applied?: boolean;
+  appliedAt?: string;
 }
 
 export interface CallAnalysis {
@@ -444,11 +447,14 @@ export async function applyRecommendation(params: {
   agentId: string;
   revisedPrompt: string;
   baselinePrompt: string;
+  /** Index of the recommendation in the report — so the server can persist its applied flag. */
+  index: number;
 }): Promise<ApplyResult> {
   const data = await apiPost(`/api/agents/${encodeURIComponent(params.agentId)}/apply`, {
     locationId: params.locationId,
     revisedPrompt: params.revisedPrompt,
     baselinePrompt: params.baselinePrompt,
+    index: params.index,
   });
   const obj = assertObject(data, 'ApplyResult');
   return {

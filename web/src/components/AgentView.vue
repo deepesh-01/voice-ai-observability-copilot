@@ -55,14 +55,20 @@ const recsLoaded = ref(false);
 // `previewIndex` = the rec whose prompt change is being generated (button spinner).
 // `preview` = the modal's content (current vs revised prompt) awaiting confirmation.
 // `applying` = the live PATCH is in flight (writes are one-at-a-time, server-serialized).
-// `appliedIndexes` = recs already applied THIS synthesis; once any is applied the rest
-// are disabled until a refresh, since their previews were built on the now-stale prompt.
+// Applied state itself lives on each recommendation (`rec.applied`), persisted server-side,
+// so it survives reloads; applied recs sort to the bottom with a green border.
 const previewIndex = ref<number | null>(null);
 const preview = ref<RecommendationPreview | null>(null);
 const applying = ref(false);
 const applyError = ref<string | null>(null);
-const appliedIndexes = ref<Set<number>>(new Set());
 const applyNotice = ref<string | null>(null);
+
+/** Recommendations with their original index, applied ones sorted to the bottom (stable). */
+const sortedRecommendations = computed(() =>
+  (recommendations.value?.recommendations ?? [])
+    .map((rec, i) => ({ rec, i }))
+    .sort((a, b) => Number(a.rec.applied ?? false) - Number(b.rec.applied ?? false)),
+);
 
 // ── Data loading ──────────────────────────────────────────────────────────────
 
@@ -110,8 +116,6 @@ async function loadRecommendations(opts: { reload?: boolean; force?: boolean } =
     });
     recommendations.value = data;
     recsLoaded.value = true;
-    // Fresh synthesis reflects the current prompt → previous "applied" flags no longer apply.
-    appliedIndexes.value = new Set();
     applyNotice.value = null;
   } catch (e) {
     errorRecs.value = e instanceof Error ? e.message : 'Failed to synthesize recommendations.';
@@ -158,6 +162,7 @@ async function confirmApply() {
       agentId: props.agentId,
       revisedPrompt: current.revisedPrompt,
       baselinePrompt: current.currentPrompt,
+      index: current.index,
     });
     // The server returns 4xx/5xx (→ throw) on a failed/unverified write; this guards the
     // 2xx-but-not-ok case so we never claim success the read-back didn't confirm.
@@ -165,8 +170,15 @@ async function confirmApply() {
       applyError.value = 'The update could not be verified on the agent. Please try again.';
       return;
     }
-    appliedIndexes.value = new Set(appliedIndexes.value).add(current.index);
-    applyNotice.value = `Updated the agent prompt — “${current.recommendation.title}”. Refresh recommendations to apply more.`;
+    // Reflect immediately (the server also persisted this): the card sinks to the bottom
+    // with a green border. The next preview reads the now-updated live prompt, so other
+    // recommendations stay applyable.
+    const rec = recommendations.value?.recommendations[current.index];
+    if (rec) {
+      rec.applied = true;
+      rec.appliedAt = new Date().toISOString();
+    }
+    applyNotice.value = `Applied “${current.recommendation.title}” to the agent.`;
     preview.value = null;
   } catch (e) {
     applyError.value = e instanceof Error ? e.message : 'Failed to update the agent.';
@@ -175,14 +187,9 @@ async function confirmApply() {
   }
 }
 
-/** Is the Apply button for rec `i` disabled? (a write/preview is busy, or a sibling was applied) */
-function applyDisabled(i: number): boolean {
-  return (
-    applying.value ||
-    previewIndex.value !== null ||
-    appliedIndexes.value.has(i) ||
-    appliedIndexes.value.size > 0
-  );
+/** Apply is disabled only while a preview or write is in flight (one operation at a time). */
+function applyDisabled(): boolean {
+  return applying.value || previewIndex.value !== null;
 }
 
 type DiffRow = { type: 'same' | 'add' | 'del'; text: string };
@@ -387,11 +394,11 @@ function kindLabel(kind: string): string {
         <template v-else-if="recommendations">
           <p v-if="recommendations.summary" class="recs-summary">{{ recommendations.summary }}</p>
 
-          <!-- Post-apply notice: the prompt changed, so the remaining previews are stale. -->
+          <!-- Post-apply confirmation. Applied recs persist (server-side) and sink to the bottom. -->
           <div v-if="applyNotice" class="apply-notice" role="status">
             <span class="apply-notice-icon">✓</span>
             <span class="apply-notice-text">{{ applyNotice }}</span>
-            <button class="btn-sm" @click="loadRecommendations({ reload: true })">Refresh</button>
+            <button class="btn-sm" @click="applyNotice = null">Dismiss</button>
           </div>
 
           <!-- Preview-time error (couldn't build the change). Apply-time errors show in the modal. -->
@@ -408,10 +415,10 @@ function kindLabel(kind: string): string {
 
           <div v-else class="rec-list">
             <div
-              v-for="(rec, i) in recommendations.recommendations"
+              v-for="{ rec, i } in sortedRecommendations"
               :key="i"
               class="rec-card stagger-item"
-              :class="`rec-card--${rec.priority}`"
+              :class="rec.applied ? 'rec-card--applied' : `rec-card--${rec.priority}`"
             >
               <div class="rec-card-header">
                 <div class="rec-meta">
@@ -456,17 +463,15 @@ function kindLabel(kind: string): string {
               </div>
 
               <div class="rec-actions">
-                <span v-if="appliedIndexes.has(i)" class="rec-applied">✓ Applied to agent</span>
+                <span v-if="rec.applied" class="rec-applied">✓ Applied to agent</span>
                 <template v-else>
                   <span v-if="previewIndex === i" class="rec-wait">
                     Generating the revised prompt — usually ~20–30s
                   </span>
                   <button
                     class="btn-apply"
-                    :disabled="applyDisabled(i)"
-                    :title="appliedIndexes.size > 0
-                      ? 'Refresh recommendations before applying another (the prompt has changed)'
-                      : 'Preview this change, then update the agent prompt'"
+                    :disabled="applyDisabled()"
+                    title="Preview this change, then update the agent prompt"
                     @click="openPreview(i)"
                   >
                     <span v-if="previewIndex === i" class="spinner"></span>
@@ -738,6 +743,9 @@ function kindLabel(kind: string): string {
 .rec-card--high   { border-left: 3px solid #dc2626; }
 .rec-card--medium { border-left: 3px solid var(--warn); }
 .rec-card--low    { border-left: 3px solid var(--ok); }
+/* Applied: green left border + slightly muted, sorted to the bottom. */
+.rec-card--applied { border-left: 3px solid var(--ok); background: #fcfdfc; }
+.rec-card--applied .rec-title { color: var(--muted); }
 
 .rec-card-header {
   padding: 12px 16px 10px;
